@@ -50,6 +50,6 @@ Claude Code CLI ──WebSocket (MCP)──> XcodeIDEAdapter
 | `openDiff` | No-op, returns FILE_SAVED (CLI handles diffs) |
 | `closeDiff` / `closeAllDiffTabs` | No-op, returns CLOSED |
 | `openFile` | `xed --line N path` |
-| `getDiagnostics` | Proxies to `XcodeListNavigatorIssues` or `XcodeRefreshCodeIssuesInFile` |
+| `getDiagnostics` | Proxies to `XcodeListNavigatorIssues` with optional glob filter by file |
 
 All other tool calls are proxied to mcpbridge with `tabIdentifier` auto-injected.

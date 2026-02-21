@@ -13,18 +13,13 @@ enum GetDiagnosticsTool {
         }
 
         if let filePath = arguments["filePath"]?.stringValue {
-            args["filePath"] = .string(filePath)
-            do {
-                return try await bridgeClient.callTool(name: "XcodeRefreshCodeIssuesInFile", arguments: args)
-            } catch {
-                return .error("Failed to get diagnostics: \(error)")
-            }
-        } else {
-            do {
-                return try await bridgeClient.callTool(name: "XcodeListNavigatorIssues", arguments: args)
-            } catch {
-                return .error("Failed to get diagnostics: \(error)")
-            }
+            args["glob"] = .string("**/\(filePath)")
+        }
+
+        do {
+            return try await bridgeClient.callTool(name: "XcodeListNavigatorIssues", arguments: args)
+        } catch {
+            return .error("Failed to get diagnostics: \(error)")
         }
     }
 }
