@@ -30,13 +30,7 @@ When running, Claude Code can:
 make install
 ```
 
-After first install, enable the extension:
-
-1. Open **System Settings > General > Login Items & Extensions > Xcode Source Editor**
-2. Enable **XcodeIDEAdapter**
-3. Restart Xcode
-
-The adapter will launch automatically whenever Xcode starts.
+The app registers as a login item and launches automatically at login.
 
 ## Uninstall
 
@@ -47,17 +41,13 @@ make uninstall
 ## Build from Source
 
 ```bash
-# Using Xcode project
 xcodebuild -scheme XcodeIDEAdapter -configuration Release build
-
-# Using Swift Package Manager (adapter only, no extension)
-swift build -c release
 ```
 
 ## Usage
 
-1. Install the app and enable the extension (see above)
-2. Open a project in Xcode — the adapter starts automatically and appears in the menu bar
+1. Install the app (`make install`)
+2. Open a project in Xcode — the adapter appears in the menu bar
 3. In Claude Code, run `/ide` to connect
 4. Claude Code now has access to Xcode tools via the MCP server
 
@@ -65,7 +55,7 @@ The adapter automatically detects when you switch projects in Xcode and updates 
 
 ## Architecture
 
-The app includes a Source Editor Extension that triggers the host app via a custom URL scheme (`xcode-ide-adapter://activate`) when Xcode launches. The host app then:
+The app registers as a login item via `SMAppService` and:
 
 - Starts a WebSocket MCP server on a random port (127.0.0.1)
 - Writes a lock file to `~/.claude/ide/{port}.lock` for Claude Code discovery
