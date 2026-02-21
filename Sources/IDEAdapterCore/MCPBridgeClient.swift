@@ -1,6 +1,6 @@
 import Foundation
 
-final class MCPBridgeClient: @unchecked Sendable {
+public final class MCPBridgeClient: @unchecked Sendable {
     private var process: Process?
     private var stdinPipe: Pipe?
     private var stdoutPipe: Pipe?
@@ -10,7 +10,9 @@ final class MCPBridgeClient: @unchecked Sendable {
     private var readBuffer = Data()
     private var isRunning = false
 
-    func start() async throws {
+    public init() {}
+
+    public func start() async throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
         process.arguments = ["mcpbridge"]
@@ -51,7 +53,7 @@ final class MCPBridgeClient: @unchecked Sendable {
         try await initialize()
     }
 
-    func stop() {
+    public func stop() {
         stdinPipe?.fileHandleForWriting.closeFile()
         stdoutPipe?.fileHandleForReading.readabilityHandler = nil
         if process?.isRunning == true {
@@ -63,7 +65,7 @@ final class MCPBridgeClient: @unchecked Sendable {
         isRunning = false
     }
 
-    func listTools() async throws -> [MCPToolDefinition] {
+    public func listTools() async throws -> [MCPToolDefinition] {
         let result = try await sendRequest(method: "tools/list")
         guard let tools = result["tools"]?.arrayValue else { return [] }
 
@@ -76,7 +78,7 @@ final class MCPBridgeClient: @unchecked Sendable {
         }
     }
 
-    func callTool(name: String, arguments: [String: JSONValue]) async throws -> MCPToolResult {
+    public func callTool(name: String, arguments: [String: JSONValue]) async throws -> MCPToolResult {
         let params: JSONValue = .object([
             "name": .string(name),
             "arguments": .object(arguments)
@@ -176,13 +178,13 @@ final class MCPBridgeClient: @unchecked Sendable {
     }
 }
 
-enum BridgeError: Error, LocalizedError {
+public enum BridgeError: Error, LocalizedError {
     case notRunning
     case processTerminated
     case encodingFailed
     case rpcError(Int, String)
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .notRunning: return "Bridge process not running"
         case .processTerminated: return "Bridge process terminated"

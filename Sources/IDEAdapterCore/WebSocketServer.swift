@@ -5,21 +5,21 @@ import NIOHTTP1
 import NIOWebSocket
 import NIOFoundationCompat
 
-final class WebSocketServer: @unchecked Sendable {
+public final class WebSocketServer: @unchecked Sendable {
     private let authToken: String
     private let group: MultiThreadedEventLoopGroup
     private var channel: Channel?
     private var clientChannel: Channel?
-    var toolRouter: MCPToolRouter?
-    var onClientConnected: (() -> Void)?
-    var onClientDisconnected: (() -> Void)?
+    public var toolRouter: MCPToolRouter?
+    public var onClientConnected: (() -> Void)?
+    public var onClientDisconnected: (() -> Void)?
 
-    init(authToken: String) {
+    public init(authToken: String) {
         self.authToken = authToken
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     }
 
-    func start() async throws -> Int {
+    public func start() async throws -> Int {
         let upgrader = NIOWebSocketServerUpgrader(
             shouldUpgrade: { [authToken] (channel, head) in
                 let authHeader = head.headers["X-Claude-Code-Ide-Authorization"].first
@@ -71,13 +71,13 @@ final class WebSocketServer: @unchecked Sendable {
         throw lastError ?? WebSocketError.bindFailed
     }
 
-    func stop() {
+    public func stop() {
         clientChannel?.close(promise: nil)
         channel?.close(promise: nil)
         group.shutdownGracefully { _ in }
     }
 
-    func sendNotification(_ notification: JSONRPCNotification) {
+    public func sendNotification(_ notification: JSONRPCNotification) {
         guard let channel = clientChannel else { return }
         guard let data = try? JSONEncoder().encode(notification) else { return }
         channel.eventLoop.execute {
@@ -268,7 +268,7 @@ private final class HTTPByteBufferRequestDecoder: ChannelInboundHandler, Removab
     }
 }
 
-enum WebSocketError: Error {
+public enum WebSocketError: Error {
     case authFailed
     case bindFailed
 }

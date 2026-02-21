@@ -1,16 +1,16 @@
 import AppKit
 
-final class XcodeMonitor {
+public final class XcodeMonitor {
     private let onStateChange: (Bool) -> Void
     private var observer: NSObjectProtocol?
     private var terminateObserver: NSObjectProtocol?
     private var wasRunning = false
 
-    init(onStateChange: @escaping (Bool) -> Void) {
+    public init(onStateChange: @escaping (Bool) -> Void) {
         self.onStateChange = onStateChange
     }
 
-    func startMonitoring() {
+    public func startMonitoring() {
         wasRunning = Self.isXcodeRunning()
 
         observer = NSWorkspace.shared.notificationCenter.addObserver(
@@ -36,7 +36,7 @@ final class XcodeMonitor {
         }
     }
 
-    func stopMonitoring() {
+    public func stopMonitoring() {
         if let obs = observer {
             NSWorkspace.shared.notificationCenter.removeObserver(obs)
         }
@@ -45,7 +45,7 @@ final class XcodeMonitor {
         }
     }
 
-    static func isXcodeRunning() -> Bool {
+    public static func isXcodeRunning() -> Bool {
         NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier?.hasPrefix("com.apple.dt.Xcode") == true }
     }
 }

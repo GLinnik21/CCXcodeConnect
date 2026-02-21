@@ -1,12 +1,17 @@
 import Foundation
 
-struct WorkspaceInfo {
-    let name: String
-    let path: String
+public struct WorkspaceInfo {
+    public let name: String
+    public let path: String
+
+    public init(name: String, path: String) {
+        self.name = name
+        self.path = path
+    }
 }
 
-enum WorkspaceDetector {
-    static func detect() -> [WorkspaceInfo] {
+public enum WorkspaceDetector {
+    public static func detect() -> [WorkspaceInfo] {
         let script = "tell application \"Xcode\" to return path of every workspace document"
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")

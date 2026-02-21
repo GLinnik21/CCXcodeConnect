@@ -1,8 +1,8 @@
 import Foundation
 
-final class MCPToolRouter: @unchecked Sendable {
+public final class MCPToolRouter: @unchecked Sendable {
     private let bridgeClient: MCPBridgeClient
-    var tabIdentifier: String?
+    public var tabIdentifier: String?
 
     private let ideTools: [MCPToolDefinition] = [
         MCPToolDefinition(
@@ -74,15 +74,15 @@ final class MCPToolRouter: @unchecked Sendable {
         ),
     ]
 
-    init(bridgeClient: MCPBridgeClient) {
+    public init(bridgeClient: MCPBridgeClient) {
         self.bridgeClient = bridgeClient
     }
 
-    func listTools() -> [MCPToolDefinition] {
+    public func listTools() -> [MCPToolDefinition] {
         return ideTools
     }
 
-    func callTool(name: String, arguments: [String: JSONValue]) async -> MCPToolResult {
+    public func callTool(name: String, arguments: [String: JSONValue]) async -> MCPToolResult {
         switch name {
         case "openDiff":
             return await OpenDiffTool.execute(arguments: arguments)

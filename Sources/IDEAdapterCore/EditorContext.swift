@@ -1,17 +1,17 @@
 import Foundation
 
-final class EditorContext: @unchecked Sendable {
+public final class EditorContext: @unchecked Sendable {
     private var timer: DispatchSourceTimer?
     private let sendNotification: (JSONRPCNotification) -> Void
     private var lastFilePath: String?
     private var lastSelectionStart: Int?
     private var lastSelectionEnd: Int?
 
-    init(sendNotification: @escaping (JSONRPCNotification) -> Void) {
+    public init(sendNotification: @escaping (JSONRPCNotification) -> Void) {
         self.sendNotification = sendNotification
     }
 
-    func start() {
+    public func start() {
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
         timer.schedule(deadline: .now(), repeating: .milliseconds(500))
         timer.setEventHandler { [weak self] in
@@ -21,7 +21,7 @@ final class EditorContext: @unchecked Sendable {
         self.timer = timer
     }
 
-    func stop() {
+    public func stop() {
         timer?.cancel()
         timer = nil
     }

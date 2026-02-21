@@ -7,12 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		838E77172F4A45F5000CC80C /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00032F4A4489000CC80C /* NIOCore */; };
-		838E77182F4A45F5000CC80C /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00042F4A4489000CC80C /* NIOPosix */; };
-		838E77192F4A45F5000CC80C /* NIOHTTP1 in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00052F4A4489000CC80C /* NIOHTTP1 */; };
-		838E771A2F4A45F5000CC80C /* NIOWebSocket in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00062F4A4489000CC80C /* NIOWebSocket */; };
-		838E771B2F4A45F5000CC80C /* NIOFoundationCompat in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00072F4A4489000CC80C /* NIOFoundationCompat */; };
-		838E771C2F4A45F5000CC80C /* NIOExtras in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00082F4A4489000CC80C /* NIOExtras */; };
+		BBBB00032F4A0001000CC80C /* IDEAdapterCore in Frameworks */ = {isa = PBXBuildFile; productRef = BBBB00022F4A0001000CC80C /* IDEAdapterCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,13 +25,24 @@
 
 /* Begin PBXFileReference section */
 		838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeIDEAdapter.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		838E77422F4A4694000CC80C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
-		838E77442F4A4695000CC80C /* XcodeKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XcodeKit.framework; path = Library/Frameworks/XcodeKit.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		CCCC00012F4A0001000CC80C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 838E77082F4A4489000CC80C /* XcodeIDEAdapter */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		838E77842F4A4775000CC80C /* XcodeIDEAdapter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CCCC00012F4A0001000CC80C /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
 			path = XcodeIDEAdapter;
 			sourceTree = "<group>";
 		};
@@ -47,12 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				838E771C2F4A45F5000CC80C /* NIOExtras in Frameworks */,
-				838E771B2F4A45F5000CC80C /* NIOFoundationCompat in Frameworks */,
-				838E771A2F4A45F5000CC80C /* NIOWebSocket in Frameworks */,
-				838E77192F4A45F5000CC80C /* NIOHTTP1 in Frameworks */,
-				838E77182F4A45F5000CC80C /* NIOPosix in Frameworks */,
-				838E77172F4A45F5000CC80C /* NIOCore in Frameworks */,
+				BBBB00032F4A0001000CC80C /* IDEAdapterCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,7 +64,6 @@
 			isa = PBXGroup;
 			children = (
 				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
-				838E77412F4A4694000CC80C /* Frameworks */,
 				838E770A2F4A4489000CC80C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,15 +74,6 @@
 				838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		838E77412F4A4694000CC80C /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				838E77422F4A4694000CC80C /* Cocoa.framework */,
-				838E77442F4A4695000CC80C /* XcodeKit.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -106,12 +97,7 @@
 			);
 			name = XcodeIDEAdapter;
 			packageProductDependencies = (
-				AAAA00032F4A4489000CC80C /* NIOCore */,
-				AAAA00042F4A4489000CC80C /* NIOPosix */,
-				AAAA00052F4A4489000CC80C /* NIOHTTP1 */,
-				AAAA00062F4A4489000CC80C /* NIOWebSocket */,
-				AAAA00072F4A4489000CC80C /* NIOFoundationCompat */,
-				AAAA00082F4A4489000CC80C /* NIOExtras */,
+				BBBB00022F4A0001000CC80C /* IDEAdapterCore */,
 			);
 			productName = XcodeIDEAdapter;
 			productReference = 838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */;
@@ -142,8 +128,7 @@
 			mainGroup = 838E77002F4A4489000CC80C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */,
-				AAAA00022F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio-extras" */,
+				BBBB00012F4A0001000CC80C /* XCLocalSwiftPackageReference "." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 838E770A2F4A4489000CC80C /* Products */;
@@ -369,55 +354,17 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-nio.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.65.0;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		BBBB00012F4A0001000CC80C /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
 		};
-		AAAA00022F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio-extras" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/apple/swift-nio-extras.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.22.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		AAAA00032F4A4489000CC80C /* NIOCore */ = {
+		BBBB00022F4A0001000CC80C /* IDEAdapterCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
-			productName = NIOCore;
-		};
-		AAAA00042F4A4489000CC80C /* NIOPosix */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
-			productName = NIOPosix;
-		};
-		AAAA00052F4A4489000CC80C /* NIOHTTP1 */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
-			productName = NIOHTTP1;
-		};
-		AAAA00062F4A4489000CC80C /* NIOWebSocket */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
-			productName = NIOWebSocket;
-		};
-		AAAA00072F4A4489000CC80C /* NIOFoundationCompat */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
-			productName = NIOFoundationCompat;
-		};
-		AAAA00082F4A4489000CC80C /* NIOExtras */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AAAA00022F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio-extras" */;
-			productName = NIOExtras;
+			productName = IDEAdapterCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

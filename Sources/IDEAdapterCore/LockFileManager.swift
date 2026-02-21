@@ -1,11 +1,11 @@
 import Foundation
 
-final class LockFileManager {
+public final class LockFileManager {
     private let port: Int
     private let authToken: String
     private let lockFilePath: String
 
-    init(port: Int, authToken: String) {
+    public init(port: Int, authToken: String) {
         self.port = port
         self.authToken = authToken
 
@@ -38,7 +38,7 @@ final class LockFileManager {
         }
     }
 
-    func write(workspaceFolders: [String]) {
+    public func write(workspaceFolders: [String]) {
         let lock: [String: Any] = [
             "pid": ProcessInfo.processInfo.processIdentifier,
             "workspaceFolders": workspaceFolders,
@@ -53,7 +53,7 @@ final class LockFileManager {
         chmod(lockFilePath, 0o600)
     }
 
-    func remove() {
+    public func remove() {
         try? FileManager.default.removeItem(atPath: lockFilePath)
     }
 

@@ -3,7 +3,7 @@ INSTALL_DIR = $(HOME)/Applications
 SCHEME = XcodeIDEAdapter
 BUILD_DIR = .build/xcode
 
-.PHONY: build install uninstall clean
+.PHONY: build install uninstall clean build-cli run
 
 build:
 	xcodebuild -scheme $(SCHEME) -configuration Release -derivedDataPath $(BUILD_DIR) build
@@ -23,3 +23,10 @@ uninstall:
 
 clean:
 	@rm -rf $(BUILD_DIR)
+	@swift package clean
+
+build-cli:
+	swift build -c release
+
+run:
+	swift run xcode-ide-adapter
