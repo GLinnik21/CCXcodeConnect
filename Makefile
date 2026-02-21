@@ -13,9 +13,7 @@ install: build
 	@rm -rf "$(INSTALL_DIR)/$(APP_NAME).app"
 	@cp -R "$$(find $(BUILD_DIR) -name '$(APP_NAME).app' -path '*/Release/*' | head -1)" "$(INSTALL_DIR)/$(APP_NAME).app"
 	@echo "Installed $(APP_NAME).app to $(INSTALL_DIR)"
-	@echo ""
-	@echo "Enable the extension: System Settings > General > Login Items & Extensions > Xcode Source Editor"
-	@echo "Then restart Xcode."
+	@open "$(INSTALL_DIR)/$(APP_NAME).app"
 
 uninstall:
 	@osascript -e 'quit app "$(APP_NAME)"' 2>/dev/null || true

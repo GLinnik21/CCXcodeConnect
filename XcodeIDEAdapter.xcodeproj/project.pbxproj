@@ -13,20 +13,7 @@
 		838E771A2F4A45F5000CC80C /* NIOWebSocket in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00062F4A4489000CC80C /* NIOWebSocket */; };
 		838E771B2F4A45F5000CC80C /* NIOFoundationCompat in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00072F4A4489000CC80C /* NIOFoundationCompat */; };
 		838E771C2F4A45F5000CC80C /* NIOExtras in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00082F4A4489000CC80C /* NIOExtras */; };
-		838E77432F4A4695000CC80C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838E77422F4A4694000CC80C /* Cocoa.framework */; };
-		838E77452F4A4695000CC80C /* XcodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838E77442F4A4695000CC80C /* XcodeKit.framework */; };
-		838E774E2F4A4695000CC80C /* XcodeIDEAdapterExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		838E774C2F4A4695000CC80C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 838E77012F4A4489000CC80C /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 838E773F2F4A4694000CC80C;
-			remoteInfo = XcodeIDEAdapterExtension;
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		838E77532F4A4695000CC80C /* Embed Foundation Extensions */ = {
@@ -35,7 +22,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				838E774E2F4A4695000CC80C /* XcodeIDEAdapterExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -44,30 +30,11 @@
 
 /* Begin PBXFileReference section */
 		838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeIDEAdapter.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = XcodeIDEAdapterExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		838E77422F4A4694000CC80C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		838E77442F4A4695000CC80C /* XcodeKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XcodeKit.framework; path = Library/Frameworks/XcodeKit.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		838E774F2F4A4695000CC80C /* Exceptions for "XcodeIDEAdapterExtension" folder in "XcodeIDEAdapterExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		838E77462F4A4695000CC80C /* XcodeIDEAdapterExtension */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				838E774F2F4A4695000CC80C /* Exceptions for "XcodeIDEAdapterExtension" folder in "XcodeIDEAdapterExtension" target */,
-			);
-			path = XcodeIDEAdapterExtension;
-			sourceTree = "<group>";
-		};
 		838E77842F4A4775000CC80C /* XcodeIDEAdapter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = XcodeIDEAdapter;
@@ -89,15 +56,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		838E773D2F4A4694000CC80C /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				838E77432F4A4695000CC80C /* Cocoa.framework in Frameworks */,
-				838E77452F4A4695000CC80C /* XcodeKit.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -105,7 +63,6 @@
 			isa = PBXGroup;
 			children = (
 				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
-				838E77462F4A4695000CC80C /* XcodeIDEAdapterExtension */,
 				838E77412F4A4694000CC80C /* Frameworks */,
 				838E770A2F4A4489000CC80C /* Products */,
 			);
@@ -115,7 +72,6 @@
 			isa = PBXGroup;
 			children = (
 				838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */,
-				838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -144,7 +100,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				838E774D2F4A4695000CC80C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
@@ -162,28 +117,6 @@
 			productReference = 838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */;
 			productType = "com.apple.product-type.application";
 		};
-		838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 838E77502F4A4695000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapterExtension" */;
-			buildPhases = (
-				838E773C2F4A4694000CC80C /* Sources */,
-				838E773D2F4A4694000CC80C /* Frameworks */,
-				838E773E2F4A4694000CC80C /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				838E77462F4A4695000CC80C /* XcodeIDEAdapterExtension */,
-			);
-			name = XcodeIDEAdapterExtension;
-			packageProductDependencies = (
-			);
-			productName = XcodeIDEAdapterExtension;
-			productReference = 838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */;
-			productType = "com.apple.product-type.xcode-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -195,9 +128,6 @@
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					838E77082F4A4489000CC80C = {
-						CreatedOnToolsVersion = 26.3;
-					};
-					838E773F2F4A4694000CC80C = {
 						CreatedOnToolsVersion = 26.3;
 					};
 				};
@@ -221,20 +151,12 @@
 			projectRoot = "";
 			targets = (
 				838E77082F4A4489000CC80C /* XcodeIDEAdapter */,
-				838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		838E77072F4A4489000CC80C /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		838E773E2F4A4694000CC80C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -251,22 +173,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		838E773C2F4A4694000CC80C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		838E774D2F4A4695000CC80C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */;
-			targetProxy = 838E774C2F4A4695000CC80C /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		838E77122F4A448B000CC80C /* Debug */ = {
@@ -439,64 +346,6 @@
 			};
 			name = Release;
 		};
-		838E77512F4A4695000CC80C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = XcodeIDEAdapterExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = XcodeIDEAdapterExtension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter.XcodeIDEAdapterExtension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Debug;
-		};
-		838E77522F4A4695000CC80C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
-				ENABLE_APP_SANDBOX = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = XcodeIDEAdapterExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = XcodeIDEAdapterExtension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-					"@executable_path/../../../../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 26.2;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter.XcodeIDEAdapterExtension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -514,15 +363,6 @@
 			buildConfigurations = (
 				838E77152F4A448B000CC80C /* Debug */,
 				838E77162F4A448B000CC80C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		838E77502F4A4695000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapterExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				838E77512F4A4695000CC80C /* Debug */,
-				838E77522F4A4695000CC80C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
