@@ -62,6 +62,8 @@ public final class AdapterServer {
     }
 
     public func shutdown() {
+        stopWorkspacePolling()
+        xcodeMonitor?.stopMonitoring()
         editorContext?.stop()
         bridgeClient?.stop()
         lockFileManager?.remove()

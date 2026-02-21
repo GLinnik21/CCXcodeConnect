@@ -38,5 +38,5 @@ Task {
     }
 }
 
-RunLoop.main.run()
+CFRunLoopRun()
 server.shutdown()

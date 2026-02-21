@@ -10,6 +10,7 @@ public final class WebSocketServer: @unchecked Sendable {
     private let group: MultiThreadedEventLoopGroup
     private var channel: Channel?
     private var clientChannel: Channel?
+    private var stopped = false
     public var toolRouter: MCPToolRouter?
     public var onClientConnected: (() -> Void)?
     public var onClientDisconnected: (() -> Void)?
@@ -72,13 +73,18 @@ public final class WebSocketServer: @unchecked Sendable {
     }
 
     public func stop() {
-        clientChannel?.close(promise: nil)
-        channel?.close(promise: nil)
+        stopped = true
+        let client = clientChannel
+        let server = channel
+        clientChannel = nil
+        channel = nil
+        client?.close(promise: nil)
+        server?.close(promise: nil)
         group.shutdownGracefully { _ in }
     }
 
     public func sendNotification(_ notification: JSONRPCNotification) {
-        guard let channel = clientChannel else { return }
+        guard !stopped, let channel = clientChannel else { return }
         guard let data = try? JSONEncoder().encode(notification) else { return }
         channel.eventLoop.execute {
             let buffer = channel.allocator.buffer(data: data)
