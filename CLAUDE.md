@@ -5,12 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Build & Run
 
 ```bash
-swift build                # debug build
-swift build -c release     # release build
-swift run &                # run as background menu bar app
+xcodebuild -scheme XcodeIDEAdapter -configuration Release build   # release build
+make install                                                       # build + install to ~/Applications
+make uninstall                                                     # remove app + lock files
 ```
 
-The binary lands at `.build/debug/XcodeIDEAdapter`. It requires macOS 14+ and a running Xcode instance with `xcrun mcpbridge` available (Xcode 26.3+).
+Requires macOS 14+ and a running Xcode instance with `xcrun mcpbridge` available (Xcode 26.3+).
+
+The app includes a Source Editor Extension that auto-launches the adapter when Xcode starts via `xcode-ide-adapter://activate` URL scheme.
 
 ## Architecture
 

@@ -31,8 +31,10 @@ enum WorkspaceDetector {
         return output.components(separatedBy: ", ").compactMap { path in
             let trimmed = path.trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { return nil }
-            let name = URL(fileURLWithPath: trimmed).lastPathComponent
-            return WorkspaceInfo(name: name, path: trimmed)
+            let url = URL(fileURLWithPath: trimmed)
+            let name = url.lastPathComponent
+            let folder = url.deletingLastPathComponent().path
+            return WorkspaceInfo(name: name, path: folder)
         }
     }
 }

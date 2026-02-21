@@ -24,20 +24,50 @@ When running, Claude Code can:
 - Xcode 26.3+ (for `xcrun mcpbridge` support)
 - [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code)
 
-## Build & Run
+## Install
 
 ```bash
-swift build -c release
-swift run &
+make install
 ```
 
-The app appears in the menu bar and automatically connects when Xcode is running. Claude Code discovers it via a lock file at `~/.claude/ide/{port}.lock`.
+After first install, enable the extension:
+
+1. Open **System Settings > General > Login Items & Extensions > Xcode Source Editor**
+2. Enable **XcodeIDEAdapter**
+3. Restart Xcode
+
+The adapter will launch automatically whenever Xcode starts.
+
+## Uninstall
+
+```bash
+make uninstall
+```
+
+## Build from Source
+
+```bash
+# Using Xcode project
+xcodebuild -scheme XcodeIDEAdapter -configuration Release build
+
+# Using Swift Package Manager (adapter only, no extension)
+swift build -c release
+```
 
 ## Usage
 
-1. Launch the adapter (it sits in the menu bar)
-2. Open a project in Xcode
+1. Install the app and enable the extension (see above)
+2. Open a project in Xcode — the adapter starts automatically and appears in the menu bar
 3. In Claude Code, run `/ide` to connect
 4. Claude Code now has access to Xcode tools via the MCP server
 
 The adapter automatically detects when you switch projects in Xcode and updates the connection.
+
+## Architecture
+
+The app includes a Source Editor Extension that triggers the host app via a custom URL scheme (`xcode-ide-adapter://activate`) when Xcode launches. The host app then:
+
+- Starts a WebSocket MCP server on a random port (127.0.0.1)
+- Writes a lock file to `~/.claude/ide/{port}.lock` for Claude Code discovery
+- Spawns `xcrun mcpbridge` to access Xcode's 20 built-in tools
+- Polls for editor context (active file, selection) via AppleScript

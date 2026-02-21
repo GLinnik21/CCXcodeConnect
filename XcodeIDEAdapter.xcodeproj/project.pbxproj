@@ -1,0 +1,585 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		838E77172F4A45F5000CC80C /* NIOCore in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00032F4A4489000CC80C /* NIOCore */; };
+		838E77182F4A45F5000CC80C /* NIOPosix in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00042F4A4489000CC80C /* NIOPosix */; };
+		838E77192F4A45F5000CC80C /* NIOHTTP1 in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00052F4A4489000CC80C /* NIOHTTP1 */; };
+		838E771A2F4A45F5000CC80C /* NIOWebSocket in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00062F4A4489000CC80C /* NIOWebSocket */; };
+		838E771B2F4A45F5000CC80C /* NIOFoundationCompat in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00072F4A4489000CC80C /* NIOFoundationCompat */; };
+		838E771C2F4A45F5000CC80C /* NIOExtras in Frameworks */ = {isa = PBXBuildFile; productRef = AAAA00082F4A4489000CC80C /* NIOExtras */; };
+		838E77432F4A4695000CC80C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838E77422F4A4694000CC80C /* Cocoa.framework */; };
+		838E77452F4A4695000CC80C /* XcodeKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 838E77442F4A4695000CC80C /* XcodeKit.framework */; };
+		838E774E2F4A4695000CC80C /* XcodeIDEAdapterExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		838E774C2F4A4695000CC80C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 838E77012F4A4489000CC80C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 838E773F2F4A4694000CC80C;
+			remoteInfo = XcodeIDEAdapterExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		838E77532F4A4695000CC80C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				838E774E2F4A4695000CC80C /* XcodeIDEAdapterExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeIDEAdapter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = XcodeIDEAdapterExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		838E77422F4A4694000CC80C /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		838E77442F4A4695000CC80C /* XcodeKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XcodeKit.framework; path = Library/Frameworks/XcodeKit.framework; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		838E774F2F4A4695000CC80C /* Exceptions for "XcodeIDEAdapterExtension" folder in "XcodeIDEAdapterExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		838E77462F4A4695000CC80C /* XcodeIDEAdapterExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				838E774F2F4A4695000CC80C /* Exceptions for "XcodeIDEAdapterExtension" folder in "XcodeIDEAdapterExtension" target */,
+			);
+			path = XcodeIDEAdapterExtension;
+			sourceTree = "<group>";
+		};
+		838E77842F4A4775000CC80C /* XcodeIDEAdapter */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = XcodeIDEAdapter;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		838E77062F4A4489000CC80C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				838E771C2F4A45F5000CC80C /* NIOExtras in Frameworks */,
+				838E771B2F4A45F5000CC80C /* NIOFoundationCompat in Frameworks */,
+				838E771A2F4A45F5000CC80C /* NIOWebSocket in Frameworks */,
+				838E77192F4A45F5000CC80C /* NIOHTTP1 in Frameworks */,
+				838E77182F4A45F5000CC80C /* NIOPosix in Frameworks */,
+				838E77172F4A45F5000CC80C /* NIOCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		838E773D2F4A4694000CC80C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				838E77432F4A4695000CC80C /* Cocoa.framework in Frameworks */,
+				838E77452F4A4695000CC80C /* XcodeKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		838E77002F4A4489000CC80C = {
+			isa = PBXGroup;
+			children = (
+				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
+				838E77462F4A4695000CC80C /* XcodeIDEAdapterExtension */,
+				838E77412F4A4694000CC80C /* Frameworks */,
+				838E770A2F4A4489000CC80C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		838E770A2F4A4489000CC80C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */,
+				838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		838E77412F4A4694000CC80C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				838E77422F4A4694000CC80C /* Cocoa.framework */,
+				838E77442F4A4695000CC80C /* XcodeKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		838E77082F4A4489000CC80C /* XcodeIDEAdapter */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 838E77142F4A448B000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapter" */;
+			buildPhases = (
+				838E77052F4A4489000CC80C /* Sources */,
+				838E77062F4A4489000CC80C /* Frameworks */,
+				838E77072F4A4489000CC80C /* Resources */,
+				838E77532F4A4695000CC80C /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				838E774D2F4A4695000CC80C /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
+			);
+			name = XcodeIDEAdapter;
+			packageProductDependencies = (
+				AAAA00032F4A4489000CC80C /* NIOCore */,
+				AAAA00042F4A4489000CC80C /* NIOPosix */,
+				AAAA00052F4A4489000CC80C /* NIOHTTP1 */,
+				AAAA00062F4A4489000CC80C /* NIOWebSocket */,
+				AAAA00072F4A4489000CC80C /* NIOFoundationCompat */,
+				AAAA00082F4A4489000CC80C /* NIOExtras */,
+			);
+			productName = XcodeIDEAdapter;
+			productReference = 838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */;
+			productType = "com.apple.product-type.application";
+		};
+		838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 838E77502F4A4695000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapterExtension" */;
+			buildPhases = (
+				838E773C2F4A4694000CC80C /* Sources */,
+				838E773D2F4A4694000CC80C /* Frameworks */,
+				838E773E2F4A4694000CC80C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				838E77462F4A4695000CC80C /* XcodeIDEAdapterExtension */,
+			);
+			name = XcodeIDEAdapterExtension;
+			packageProductDependencies = (
+			);
+			productName = XcodeIDEAdapterExtension;
+			productReference = 838E77402F4A4694000CC80C /* XcodeIDEAdapterExtension.appex */;
+			productType = "com.apple.product-type.xcode-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		838E77012F4A4489000CC80C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					838E77082F4A4489000CC80C = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					838E773F2F4A4694000CC80C = {
+						CreatedOnToolsVersion = 26.3;
+					};
+				};
+			};
+			buildConfigurationList = 838E77042F4A4489000CC80C /* Build configuration list for PBXProject "XcodeIDEAdapter" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 838E77002F4A4489000CC80C;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */,
+				AAAA00022F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio-extras" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 838E770A2F4A4489000CC80C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				838E77082F4A4489000CC80C /* XcodeIDEAdapter */,
+				838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		838E77072F4A4489000CC80C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		838E773E2F4A4694000CC80C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		838E77052F4A4489000CC80C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		838E773C2F4A4694000CC80C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		838E774D2F4A4695000CC80C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 838E773F2F4A4694000CC80C /* XcodeIDEAdapterExtension */;
+			targetProxy = 838E774C2F4A4695000CC80C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		838E77122F4A448B000CC80C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		838E77132F4A448B000CC80C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		838E77152F4A448B000CC80C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = XcodeIDEAdapter/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		838E77162F4A448B000CC80C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = XcodeIDEAdapter/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		838E77512F4A4695000CC80C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = XcodeIDEAdapterExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XcodeIDEAdapterExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter.XcodeIDEAdapterExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		838E77522F4A4695000CC80C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = XcodeIDEAdapterExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = XcodeIDEAdapterExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.2;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter.XcodeIDEAdapterExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		838E77042F4A4489000CC80C /* Build configuration list for PBXProject "XcodeIDEAdapter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				838E77122F4A448B000CC80C /* Debug */,
+				838E77132F4A448B000CC80C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		838E77142F4A448B000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				838E77152F4A448B000CC80C /* Debug */,
+				838E77162F4A448B000CC80C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		838E77502F4A4695000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapterExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				838E77512F4A4695000CC80C /* Debug */,
+				838E77522F4A4695000CC80C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.65.0;
+			};
+		};
+		AAAA00022F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio-extras" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio-extras.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.22.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AAAA00032F4A4489000CC80C /* NIOCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOCore;
+		};
+		AAAA00042F4A4489000CC80C /* NIOPosix */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOPosix;
+		};
+		AAAA00052F4A4489000CC80C /* NIOHTTP1 */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOHTTP1;
+		};
+		AAAA00062F4A4489000CC80C /* NIOWebSocket */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOWebSocket;
+		};
+		AAAA00072F4A4489000CC80C /* NIOFoundationCompat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA00012F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIOFoundationCompat;
+		};
+		AAAA00082F4A4489000CC80C /* NIOExtras */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AAAA00022F4A4489000CC80C /* XCRemoteSwiftPackageReference "swift-nio-extras" */;
+			productName = NIOExtras;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 838E77012F4A4489000CC80C /* Project object */;
+}
