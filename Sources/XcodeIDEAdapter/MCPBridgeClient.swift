@@ -1,0 +1,193 @@
+import Foundation
+
+final class MCPBridgeClient: @unchecked Sendable {
+    private var process: Process?
+    private var stdinPipe: Pipe?
+    private var stdoutPipe: Pipe?
+    private var pendingRequests: [JSONRPCId: CheckedContinuation<JSONValue, Error>] = [:]
+    private var nextId = 1
+    private let lock = NSLock()
+    private var readBuffer = Data()
+    private var isRunning = false
+
+    func start() async throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
+        process.arguments = ["mcpbridge"]
+
+        let stdin = Pipe()
+        let stdout = Pipe()
+        process.standardInput = stdin
+        process.standardOutput = stdout
+        process.standardError = FileHandle.nullDevice
+
+        self.process = process
+        self.stdinPipe = stdin
+        self.stdoutPipe = stdout
+
+        stdout.fileHandleForReading.readabilityHandler = { [weak self] handle in
+            let data = handle.availableData
+            guard !data.isEmpty else { return }
+            self?.handleData(data)
+        }
+
+        process.terminationHandler = { [weak self] _ in
+            guard let self else { return }
+            let pending = self.lock.withLock { () -> [JSONRPCId: CheckedContinuation<JSONValue, Error>] in
+                self.isRunning = false
+                let p = self.pendingRequests
+                self.pendingRequests.removeAll()
+                return p
+            }
+            for (_, cont) in pending {
+                cont.resume(throwing: BridgeError.processTerminated)
+            }
+        }
+
+        try process.run()
+        isRunning = true
+
+        try await Task.sleep(nanoseconds: 500_000_000)
+        try await initialize()
+    }
+
+    func stop() {
+        stdinPipe?.fileHandleForWriting.closeFile()
+        stdoutPipe?.fileHandleForReading.readabilityHandler = nil
+        if process?.isRunning == true {
+            process?.terminate()
+        }
+        process = nil
+        stdinPipe = nil
+        stdoutPipe = nil
+        isRunning = false
+    }
+
+    func listTools() async throws -> [MCPToolDefinition] {
+        let result = try await sendRequest(method: "tools/list")
+        guard let tools = result["tools"]?.arrayValue else { return [] }
+
+        return tools.compactMap { tool -> MCPToolDefinition? in
+            guard let obj = tool.objectValue,
+                  let name = obj["name"]?.stringValue else { return nil }
+            let description = obj["description"]?.stringValue
+            let inputSchema = obj["inputSchema"]
+            return MCPToolDefinition(name: name, description: description, inputSchema: inputSchema)
+        }
+    }
+
+    func callTool(name: String, arguments: [String: JSONValue]) async throws -> MCPToolResult {
+        let params: JSONValue = .object([
+            "name": .string(name),
+            "arguments": .object(arguments)
+        ])
+        let result = try await sendRequest(method: "tools/call", params: params)
+
+        guard let contentArray = result["content"]?.arrayValue else {
+            return .text("No content in response")
+        }
+
+        let content: [MCPContent] = contentArray.compactMap { item in
+            guard let obj = item.objectValue,
+                  let type = obj["type"]?.stringValue else { return nil }
+            let text = obj["text"]?.stringValue
+            let data = obj["data"]?.stringValue
+            let mimeType = obj["mimeType"]?.stringValue
+            return MCPContent(type: type, text: text, data: data, mimeType: mimeType)
+        }
+
+        let isError: Bool? = {
+            if case .bool(let b) = result["isError"] { return b }
+            return nil
+        }()
+
+        return MCPToolResult(content: content, isError: isError)
+    }
+
+    private func initialize() async throws {
+        let initParams: JSONValue = .object([
+            "protocolVersion": .string("2024-11-05"),
+            "capabilities": .object([:]),
+            "clientInfo": .object([
+                "name": .string("xcode-ide-adapter"),
+                "version": .string("1.0.0")
+            ])
+        ])
+        _ = try await sendRequest(method: "initialize", params: initParams)
+        sendNotification(method: "notifications/initialized")
+    }
+
+    private func sendRequest(method: String, params: JSONValue? = nil) async throws -> JSONValue {
+        guard isRunning else { throw BridgeError.notRunning }
+
+        let id: JSONRPCId = lock.withLock {
+            let current = nextId
+            nextId += 1
+            return .int(current)
+        }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            lock.withLock { pendingRequests[id] = continuation }
+
+            let request = JSONRPCRequest(method: method, params: params, id: id)
+            guard let data = try? JSONEncoder().encode(request) else {
+                _ = lock.withLock { pendingRequests.removeValue(forKey: id) }
+                continuation.resume(throwing: BridgeError.encodingFailed)
+                return
+            }
+
+            var message = data
+            message.append(contentsOf: [0x0a])
+            stdinPipe?.fileHandleForWriting.write(message)
+        }
+    }
+
+    private func sendNotification(method: String, params: JSONValue? = nil) {
+        let notification = JSONRPCNotification(method: method, params: params)
+        guard let data = try? JSONEncoder().encode(notification) else { return }
+        var message = data
+        message.append(contentsOf: [0x0a])
+        stdinPipe?.fileHandleForWriting.write(message)
+    }
+
+    private func handleData(_ data: Data) {
+        readBuffer.append(data)
+
+        while let newlineIndex = readBuffer.firstIndex(of: 0x0a) {
+            let lineData = readBuffer[readBuffer.startIndex..<newlineIndex]
+            readBuffer = Data(readBuffer[readBuffer.index(after: newlineIndex)...])
+
+            guard !lineData.isEmpty else { continue }
+            handleLine(Data(lineData))
+        }
+    }
+
+    private func handleLine(_ data: Data) {
+        guard let response = try? JSONDecoder().decode(JSONRPCResponse.self, from: data) else { return }
+        guard let id = response.id else { return }
+
+        let continuation = lock.withLock { pendingRequests.removeValue(forKey: id) }
+
+        if let error = response.error {
+            continuation?.resume(throwing: BridgeError.rpcError(error.code, error.message))
+        } else {
+            continuation?.resume(returning: response.result ?? .null)
+        }
+    }
+}
+
+enum BridgeError: Error, LocalizedError {
+    case notRunning
+    case processTerminated
+    case encodingFailed
+    case rpcError(Int, String)
+
+    var errorDescription: String? {
+        switch self {
+        case .notRunning: return "Bridge process not running"
+        case .processTerminated: return "Bridge process terminated"
+        case .encodingFailed: return "Failed to encode request"
+        case .rpcError(let code, let msg): return "RPC error \(code): \(msg)"
+        }
+    }
+}
