@@ -40,6 +40,8 @@ final class AppCoordinator: ObservableObject {
     private var toolRouter: MCPToolRouter?
     private var editorContext: EditorContext?
     private var xcodeMonitor: XcodeMonitor?
+    private var workspacePoller: DispatchSourceTimer?
+    private var lastWorkspacePaths: [String] = []
 
     func start() async {
         xcodeMonitor = XcodeMonitor { [weak self] running in
@@ -114,11 +116,13 @@ final class AppCoordinator: ObservableObject {
         self.editorContext = context
 
         let workspaces = WorkspaceDetector.detect()
+        lastWorkspacePaths = workspaces.map(\.path)
         if let first = workspaces.first {
             self.workspaceName = first.name
         }
-        lockFileManager?.write(workspaceFolders: workspaces.map(\.path))
+        lockFileManager?.write(workspaceFolders: lastWorkspacePaths)
         context.start()
+        startWorkspacePolling()
 
         Task {
             do {
@@ -132,6 +136,7 @@ final class AppCoordinator: ObservableObject {
     }
 
     private func stopBridge() {
+        stopWorkspacePolling()
         editorContext?.stop()
         editorContext = nil
         bridgeClient?.stop()
@@ -139,7 +144,37 @@ final class AppCoordinator: ObservableObject {
         toolRouter = nil
         webSocketServer?.toolRouter = nil
         workspaceName = nil
+        lastWorkspacePaths = []
         lockFileManager?.write(workspaceFolders: [])
+    }
+
+    private func startWorkspacePolling() {
+        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
+        timer.schedule(deadline: .now() + .seconds(3), repeating: .seconds(3))
+        timer.setEventHandler { [weak self] in
+            let workspaces = WorkspaceDetector.detect()
+            let paths = workspaces.map(\.path)
+            Task { @MainActor in
+                guard let self else { return }
+                guard paths != self.lastWorkspacePaths else { return }
+                self.lastWorkspacePaths = paths
+                self.workspaceName = workspaces.first?.name
+                self.lockFileManager?.write(workspaceFolders: paths)
+                if let client = self.bridgeClient {
+                    Task {
+                        let tabId = try? await Self.detectTabIdentifier(bridgeClient: client)
+                        await MainActor.run { self.toolRouter?.tabIdentifier = tabId }
+                    }
+                }
+            }
+        }
+        timer.resume()
+        self.workspacePoller = timer
+    }
+
+    private func stopWorkspacePolling() {
+        workspacePoller?.cancel()
+        workspacePoller = nil
     }
 
     private static func detectTabIdentifier(bridgeClient: MCPBridgeClient) async throws -> String? {
