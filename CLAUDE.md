@@ -12,7 +12,7 @@ make uninstall                                                     # remove app 
 
 Requires macOS 14+ and a running Xcode instance with `xcrun mcpbridge` available (Xcode 26.3+).
 
-The app includes a Source Editor Extension that auto-launches the adapter when Xcode starts via `xcode-ide-adapter://activate` URL scheme.
+The app registers as a login item via `SMAppService.mainApp` so it starts automatically at login.
 
 ## Architecture
 
@@ -24,7 +24,7 @@ Claude Code CLI ──WebSocket (MCP)──> XcodeIDEAdapter
                                         └── AppleScript → Xcode (selection, active file)
 ```
 
-**AppCoordinator** (`main.swift`) orchestrates everything:
+**AppCoordinator** (`XcodeIDEAdapterApp.swift`) orchestrates everything:
 - Starts `WebSocketServer` on a random port bound to 127.0.0.1
 - Writes a lock file to `~/.claude/ide/{port}.lock` so Claude Code discovers it
 - Monitors Xcode via `XcodeMonitor` (NSWorkspace notifications)
