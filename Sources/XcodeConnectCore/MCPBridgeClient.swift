@@ -123,7 +123,7 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
             "capabilities": .object([:]),
             "clientInfo": .object([
                 "name": .string("cc-xcode-connect"),
-                "version": .string("1.0.0")
+                "version": .string("0.0.1")
             ])
         ])
         _ = try await sendRequest(method: "initialize", params: initParams)

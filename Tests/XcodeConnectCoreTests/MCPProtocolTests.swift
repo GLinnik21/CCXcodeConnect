@@ -127,13 +127,13 @@ final class MCPProtocolTests: XCTestCase {
         let result = MCPInitializeResult(
             protocolVersion: "2024-11-05",
             capabilities: MCPCapabilities(tools: MCPToolsCapability(listChanged: true)),
-            serverInfo: MCPServerInfo(name: "cc-xcode-connect", version: "1.0.0")
+            serverInfo: MCPServerInfo(name: "cc-xcode-connect", version: "0.0.1")
         )
         let data = try JSONEncoder().encode(result)
         let decoded = try JSONDecoder().decode(MCPInitializeResult.self, from: data)
         XCTAssertEqual(decoded.protocolVersion, "2024-11-05")
         XCTAssertEqual(decoded.serverInfo.name, "cc-xcode-connect")
-        XCTAssertEqual(decoded.serverInfo.version, "1.0.0")
+        XCTAssertEqual(decoded.serverInfo.version, "0.0.1")
         XCTAssertEqual(decoded.capabilities.tools?.listChanged, true)
     }
 }
