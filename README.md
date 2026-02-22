@@ -32,13 +32,11 @@ When running, Claude Code can:
 brew install --cask GLinnik21/tap/cc-xcode-connect
 ```
 
+On first launch, macOS will block it because the app is not notarized. Go to **System Settings > Privacy & Security** and click **Open Anyway**.
+
 ### Download
 
-Grab the latest `.zip` from [Releases](https://github.com/GLinnik21/CCXcodeConnect/releases), extract, and move to `/Applications`. Then remove the quarantine attribute:
-
-```bash
-xattr -cr /Applications/CCXcodeConnect.app
-```
+Grab the latest `.zip` from [Releases](https://github.com/GLinnik21/CCXcodeConnect/releases), extract, and move to `/Applications`. On first launch, go to **System Settings > Privacy & Security** and click **Open Anyway**.
 
 ### Build from source
 
