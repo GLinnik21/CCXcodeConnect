@@ -26,6 +26,22 @@ When running, Claude Code can:
 
 ## Install
 
+### Homebrew (recommended)
+
+```bash
+brew install --cask GLinnik21/tap/cc-xcode-connect
+```
+
+### Download
+
+Grab the latest `.zip` from [Releases](https://github.com/GLinnik21/CCXcodeConnect/releases), extract, and move to `/Applications`. Then remove the quarantine attribute:
+
+```bash
+xattr -cr /Applications/CCXcodeConnect.app
+```
+
+### Build from source
+
 ```bash
 make install
 ```
@@ -35,13 +51,13 @@ The app registers as a login item and launches automatically at login.
 ## Uninstall
 
 ```bash
-make uninstall
+brew uninstall cc-xcode-connect
 ```
 
-## Build from Source
+Or if installed manually:
 
 ```bash
-xcodebuild -scheme CCXcodeConnect -configuration Release build
+make uninstall
 ```
 
 ## CLI
@@ -55,7 +71,7 @@ swift run cc-xcode-connect --workspace /path  # single targeted workspace
 
 ## Usage
 
-1. Install the app (`make install`)
+1. Install the app (see [Install](#install) above)
 2. On each Xcode launch, macOS will ask to allow CC Xcode Connect to connect to Xcode — click **OK** to grant the automation permission
 3. Open one or more projects in Xcode — the adapter appears in the menu bar
 4. In each Claude Code session, run `/ide` to connect to the matching workspace
