@@ -47,3 +47,29 @@ jobs:
           files: |
             CCXcodeConnect-${{ github.ref_name }}-macos.zip
             cc-xcode-connect-${{ github.ref_name }}-macos.tar.gz
+
+  update-tap:
+    name: Update Homebrew Tap
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update cask version and sha256
+        env:
+          TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          curl -sL "https://github.com/${{ github.repository }}/releases/download/${VERSION}/CCXcodeConnect-${VERSION}-macos.zip" -o app.zip
+          SHA=$(shasum -a 256 app.zip | awk '{print $1}')
+          echo "SHA256: $SHA"
+
+          git clone "https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/${{ github.repository_owner }}/homebrew-tap.git"
+          cd homebrew-tap
+
+          sed -i "s/version \".*\"/version \"${VERSION}\"/" Casks/cc-xcode-connect.rb
+          sed -i "s/sha256 \".*\"/sha256 \"${SHA}\"/" Casks/cc-xcode-connect.rb
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/cc-xcode-connect.rb
+          git commit -m "Update cc-xcode-connect to ${VERSION}"
+          git push
