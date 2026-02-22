@@ -1,0 +1,49 @@
+name: Release
+
+on:
+  push:
+    tags: ['[0-9]*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build .app
+        run: |
+          xcodebuild -scheme CCXcodeConnect \
+            -configuration Release \
+            -derivedDataPath .build/xcode \
+            CODE_SIGN_IDENTITY="-" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Ad-hoc codesign and zip .app
+        run: |
+          APP_PATH=$(find .build/xcode -name 'CCXcodeConnect.app' -path '*/Release/*' | head -1)
+          codesign --force --deep --sign - "$APP_PATH"
+          cd "$(dirname "$APP_PATH")"
+          zip -r -y "$GITHUB_WORKSPACE/CCXcodeConnect-${{ github.ref_name }}-macos.zip" CCXcodeConnect.app
+
+      - name: Build CLI
+        run: swift build -c release
+
+      - name: Package CLI binary
+        run: |
+          cp .build/release/cc-xcode-connect cc-xcode-connect
+          codesign --force --sign - cc-xcode-connect
+          tar czf "cc-xcode-connect-${{ github.ref_name }}-macos.tar.gz" cc-xcode-connect
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            CCXcodeConnect-${{ github.ref_name }}-macos.zip
+            cc-xcode-connect-${{ github.ref_name }}-macos.tar.gz
