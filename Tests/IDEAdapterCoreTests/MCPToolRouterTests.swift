@@ -25,10 +25,10 @@ final class MCPToolRouterTests: XCTestCase {
         return (router, mock)
     }
 
-    func testListToolsReturns12Tools() {
+    func testListToolsReturns9Tools() {
         let (router, _) = makeRouter()
         let tools = router.listTools()
-        XCTAssertEqual(tools.count, 12)
+        XCTAssertEqual(tools.count, 9)
     }
 
     func testEachToolHasObjectSchema() {
@@ -38,21 +38,6 @@ final class MCPToolRouterTests: XCTestCase {
             XCTAssertNotNil(schema, "Tool \(tool.name) should have inputSchema")
             XCTAssertEqual(schema?["type"]?.stringValue, "object", "Tool \(tool.name) schema type should be 'object'")
         }
-    }
-
-    func testCallOpenDiffReturnsFileSaved() async {
-        let (router, _) = makeRouter()
-        let result = await router.callTool(name: "openDiff", arguments: [
-            "old_file_path": .string("/tmp/f.swift"),
-            "new_file_contents": .string("new")
-        ])
-        XCTAssertEqual(result.content.first?.text, "FILE_SAVED")
-    }
-
-    func testCallCloseDiffReturnsClosed() async {
-        let (router, _) = makeRouter()
-        let result = await router.callTool(name: "closeDiff", arguments: ["tab_name": .string("t")])
-        XCTAssertEqual(result.content.first?.text, "CLOSED")
     }
 
     func testCallGetCurrentSelectionWithoutContext() async throws {

@@ -10,38 +10,6 @@ public final class MCPToolRouter: @unchecked Sendable {
 
     private let ideTools: [MCPToolDefinition] = [
         MCPToolDefinition(
-            name: "openDiff",
-            description: "Open a diff view comparing original file with new contents. Returns FILE_SAVED if accepted or DIFF_REJECTED if rejected.",
-            inputSchema: .object([
-                "type": .string("object"),
-                "properties": .object([
-                    "old_file_path": .object(["type": .string("string"), "description": .string("Path to the original file")]),
-                    "new_file_contents": .object(["type": .string("string"), "description": .string("New file contents to compare")]),
-                    "tab_name": .object(["type": .string("string"), "description": .string("Name for the diff tab")])
-                ]),
-                "required": .array([.string("old_file_path"), .string("new_file_contents")])
-            ])
-        ),
-        MCPToolDefinition(
-            name: "closeDiff",
-            description: "Close a specific diff tab",
-            inputSchema: .object([
-                "type": .string("object"),
-                "properties": .object([
-                    "tab_name": .object(["type": .string("string"), "description": .string("Name of the diff tab to close")])
-                ]),
-                "required": .array([.string("tab_name")])
-            ])
-        ),
-        MCPToolDefinition(
-            name: "closeAllDiffTabs",
-            description: "Close all open diff tabs",
-            inputSchema: .object([
-                "type": .string("object"),
-                "properties": .object([:])
-            ])
-        ),
-        MCPToolDefinition(
             name: "openFile",
             description: "Open a file in Xcode at an optional line number",
             inputSchema: .object([
@@ -142,15 +110,6 @@ public final class MCPToolRouter: @unchecked Sendable {
 
     public func callTool(name: String, arguments: [String: JSONValue]) async -> MCPToolResult {
         switch name {
-        case "openDiff":
-            logger.info("IDE tool call: openDiff")
-            return await OpenDiffTool.execute(arguments: arguments)
-        case "closeDiff", "close_tab":
-            logger.info("IDE tool call: \(name)")
-            return await CloseDiffTool.execute(arguments: arguments)
-        case "closeAllDiffTabs":
-            logger.info("IDE tool call: closeAllDiffTabs")
-            return await CloseDiffTool.closeAll()
         case "openFile":
             logger.info("IDE tool call: openFile path=\(arguments["filePath"]?.stringValue ?? "nil")")
             return await OpenFileTool.execute(arguments: arguments)

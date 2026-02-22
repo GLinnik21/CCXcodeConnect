@@ -34,7 +34,7 @@ final class MCPRequestHandlerTests: XCTestCase {
         XCTAssertEqual(tools?.count, 0)
     }
 
-    func testToolsListWithRouterReturns12Tools() async throws {
+    func testToolsListWithRouterReturns9Tools() async throws {
         var handler = MCPRequestHandler()
         handler.toolRouter = MCPToolRouter(bridgeClient: MockBridgeClient())
         let request = JSONRPCRequest(method: "tools/list", params: nil, id: .int(3))
@@ -43,7 +43,7 @@ final class MCPRequestHandlerTests: XCTestCase {
         }
 
         let tools = try XCTUnwrap(response.result?["tools"]?.arrayValue)
-        XCTAssertEqual(tools.count, 12)
+        XCTAssertEqual(tools.count, 9)
     }
 
     func testToolsCallMissingParamsReturnsError() async throws {
@@ -56,27 +56,6 @@ final class MCPRequestHandlerTests: XCTestCase {
 
         XCTAssertNotNil(response.error)
         XCTAssertEqual(response.error?.code, -32602)
-    }
-
-    func testToolsCallOpenDiffReturnsFileSaved() async throws {
-        var handler = MCPRequestHandler()
-        handler.toolRouter = MCPToolRouter(bridgeClient: MockBridgeClient())
-        let params: JSONValue = .object([
-            "name": .string("openDiff"),
-            "arguments": .object([
-                "old_file_path": .string("/tmp/f.swift"),
-                "new_file_contents": .string("new")
-            ])
-        ])
-        let request = JSONRPCRequest(method: "tools/call", params: params, id: .int(5))
-        guard let response = await handler.handleRequest(request) else {
-            return XCTFail("Expected non-nil response")
-        }
-
-        let content = response.result?["content"]?.arrayValue
-        XCTAssertNotNil(content)
-        let firstText = content?.first?["text"]?.stringValue
-        XCTAssertEqual(firstText, "FILE_SAVED")
     }
 
     func testPromptsListReturnsEmptyArray() async throws {

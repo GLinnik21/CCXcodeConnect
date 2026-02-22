@@ -61,13 +61,19 @@ The CLI also supports `--workspace <path>` for running a single targeted instanc
 
 ## Tool Routing
 
-`MCPToolRouter` exposes 5 IDE-specific tools + all 20 mcpbridge tools:
+`MCPToolRouter` exposes 9 IDE-specific tools + all mcpbridge tools:
 
 | IDE Tool | Implementation |
 |----------|---------------|
-| `openDiff` | No-op, returns FILE_SAVED (CLI handles diffs) |
-| `closeDiff` / `closeAllDiffTabs` | No-op, returns CLOSED |
 | `openFile` | `xed --line N path` |
 | `getDiagnostics` | Proxies to `XcodeListNavigatorIssues` with optional glob filter by file |
+| `executeCode` | Proxies to `ExecuteSnippet` via mcpbridge |
+| `getCurrentSelection` / `getLatestSelection` | Returns current editor selection from `EditorContext` |
+| `getOpenEditors` | Lists open editors via AppleScript |
+| `getWorkspaceFolders` | Returns detected workspace paths |
+| `checkDocumentDirty` | Checks unsaved changes via AppleScript |
+| `saveDocument` | Saves a document via AppleScript |
+
+Diff tools (`openDiff`, `closeDiff`, `closeAllDiffTabs`) are intentionally not exposed — Claude Code falls back to its built-in terminal diff view, which gives the user proper accept/reject control.
 
 All other tool calls are proxied to mcpbridge with `tabIdentifier` auto-injected.
