@@ -56,9 +56,10 @@ swift run cc-xcode-connect --workspace /path  # single targeted workspace
 ## Usage
 
 1. Install the app (`make install`)
-2. Open one or more projects in Xcode — the adapter appears in the menu bar
-3. In each Claude Code session, run `/ide` to connect to the matching workspace
-4. Claude Code now has access to Xcode tools via the MCP server
+2. On each Xcode launch, macOS will ask to allow CC Xcode Connect to connect to Xcode — click **OK** to grant the automation permission
+3. Open one or more projects in Xcode — the adapter appears in the menu bar
+4. In each Claude Code session, run `/ide` to connect to the matching workspace
+5. Claude Code now has access to Xcode tools via the MCP server
 
 Each Xcode window gets its own adapter instance with a dedicated WebSocket port and lock file. Multiple Claude Code clients can connect to the same workspace simultaneously.
 
