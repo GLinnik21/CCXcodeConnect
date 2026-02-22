@@ -12,7 +12,7 @@ public final class WebSocketServer: @unchecked Sendable {
     private let authToken: String
     private let group: MultiThreadedEventLoopGroup
     private var channel: Channel?
-    private var clientChannel: Channel?
+    private var clientChannels: [ObjectIdentifier: Channel] = [:]
     private var stopped = false
     public var requestHandler = MCPRequestHandler()
     public var toolRouter: MCPToolRouter? {
@@ -25,8 +25,10 @@ public final class WebSocketServer: @unchecked Sendable {
     private static let pingInterval: TimeInterval = 30
     private static let pongTimeout: TimeInterval = 60
     private var pingTimer: DispatchSourceTimer?
-    private var lastPongTime: Date = Date()
+    private var lastPongTimes: [ObjectIdentifier: Date] = [:]
     private var lastPingScheduledTime: Date = Date()
+
+    public var connectedClientCount: Int { clientChannels.count }
 
     public init(authToken: String) {
         self.authToken = authToken
@@ -35,16 +37,12 @@ public final class WebSocketServer: @unchecked Sendable {
 
     public func start() async throws -> Int {
         let upgrader = NIOWebSocketServerUpgrader(
-            shouldUpgrade: { [authToken, weak self] (channel, head) in
+            shouldUpgrade: { [authToken] (channel, head) in
                 let remote = channel.remoteAddress?.description ?? "?"
                 let authHeader = head.headers["X-Claude-Code-Ide-Authorization"].first
                 guard authHeader == authToken else {
                     logger.warning("upgrade rejected: bad auth from \(remote)")
                     return channel.eventLoop.makeFailedFuture(WebSocketError.authFailed)
-                }
-                if self?.clientChannel != nil {
-                    logger.warning("upgrade rejected: already connected, from \(remote)")
-                    return channel.eventLoop.makeFailedFuture(WebSocketError.alreadyConnected)
                 }
                 var headers = HTTPHeaders()
                 if let proto = head.headers["Sec-WebSocket-Protocol"].first {
@@ -94,28 +92,30 @@ public final class WebSocketServer: @unchecked Sendable {
     public func stop() {
         stopped = true
         stopPingTimer()
-        let client = clientChannel
+        let clients = clientChannels.values
         let server = channel
-        clientChannel = nil
+        clientChannels.removeAll()
+        lastPongTimes.removeAll()
         channel = nil
-        client?.close(promise: nil)
+        for ch in clients { ch.close(promise: nil) }
         server?.close(promise: nil)
         group.shutdownGracefully { _ in }
     }
 
     public func sendNotification(_ notification: JSONRPCNotification) {
-        guard !stopped, let channel = clientChannel else { return }
+        guard !stopped else { return }
         guard let data = try? JSONEncoder().encode(notification) else { return }
-        channel.eventLoop.execute {
-            let buffer = channel.allocator.buffer(data: data)
-            let frame = WebSocketFrame(fin: true, opcode: .text, data: buffer)
-            channel.writeAndFlush(frame, promise: nil)
+        for (_, ch) in clientChannels {
+            ch.eventLoop.execute {
+                let buffer = ch.allocator.buffer(data: data)
+                let frame = WebSocketFrame(fin: true, opcode: .text, data: buffer)
+                ch.writeAndFlush(frame, promise: nil)
+            }
         }
     }
 
     private func startPingTimer() {
-        stopPingTimer()
-        lastPongTime = Date()
+        guard pingTimer == nil else { return }
         lastPingScheduledTime = Date()
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
         timer.schedule(deadline: .now() + Self.pingInterval, repeating: Self.pingInterval)
@@ -136,49 +136,70 @@ public final class WebSocketServer: @unchecked Sendable {
         let elapsed = now.timeIntervalSince(lastPingScheduledTime)
         lastPingScheduledTime = now
 
-        if elapsed > Self.pingInterval * 1.5 {
-            logger.info("sleep detected (\(Int(elapsed))s since last tick), resetting pong timestamp")
-            lastPongTime = now
+        let isSleepWake = elapsed > Self.pingInterval * 1.5
+        if isSleepWake {
+            logger.info("sleep detected (\(Int(elapsed))s since last tick), resetting pong timestamps")
         }
 
-        if now.timeIntervalSince(lastPongTime) > Self.pongTimeout {
-            logger.warning("pong timeout, closing client connection")
-            let ch = clientChannel
-            clientChannel = nil
-            ch?.close(promise: nil)
+        var timedOut: [ObjectIdentifier] = []
+        for (id, lastPong) in lastPongTimes {
+            if isSleepWake {
+                lastPongTimes[id] = now
+            } else if now.timeIntervalSince(lastPong) > Self.pongTimeout {
+                timedOut.append(id)
+            }
+        }
+
+        for id in timedOut {
+            if let ch = clientChannels.removeValue(forKey: id) {
+                lastPongTimes.removeValue(forKey: id)
+                logger.warning("pong timeout, closing client \(ch.remoteAddress?.description ?? "?")")
+                ch.close(promise: nil)
+            }
+        }
+
+        if !timedOut.isEmpty && clientChannels.isEmpty {
             stopPingTimer()
             onClientDisconnected?()
-            return
         }
 
-        guard let channel = clientChannel else { return }
-        channel.eventLoop.execute {
-            let emptyBuffer = channel.allocator.buffer(capacity: 0)
-            let frame = WebSocketFrame(fin: true, opcode: .ping, data: emptyBuffer)
-            channel.writeAndFlush(frame, promise: nil)
+        for (_, ch) in clientChannels {
+            ch.eventLoop.execute {
+                let emptyBuffer = ch.allocator.buffer(capacity: 0)
+                let frame = WebSocketFrame(fin: true, opcode: .ping, data: emptyBuffer)
+                ch.writeAndFlush(frame, promise: nil)
+            }
         }
     }
 
-    fileprivate func handlePong() {
-        lastPongTime = Date()
+    fileprivate func handlePong(_ channel: Channel) {
+        lastPongTimes[ObjectIdentifier(channel)] = Date()
     }
 
     fileprivate func handleConnected(_ channel: Channel) {
-        logger.info("client connected: \(channel.remoteAddress?.description ?? "?")")
-        self.clientChannel = channel
+        let wasEmpty = clientChannels.isEmpty
+        let id = ObjectIdentifier(channel)
+        logger.info("client connected: \(channel.remoteAddress?.description ?? "?") (total: \(clientChannels.count + 1))")
+        clientChannels[id] = channel
+        lastPongTimes[id] = Date()
         startPingTimer()
-        onClientConnected?()
+        if wasEmpty {
+            onClientConnected?()
+        }
     }
 
     fileprivate func handleDisconnected(_ channel: Channel) {
-        guard self.clientChannel === channel else { return }
-        logger.info("client disconnected")
-        stopPingTimer()
-        self.clientChannel = nil
-        onClientDisconnected?()
+        let id = ObjectIdentifier(channel)
+        guard clientChannels.removeValue(forKey: id) != nil else { return }
+        lastPongTimes.removeValue(forKey: id)
+        logger.info("client disconnected (remaining: \(clientChannels.count))")
+        if clientChannels.isEmpty {
+            stopPingTimer()
+            onClientDisconnected?()
+        }
     }
 
-    fileprivate func handleMessage(_ text: String) {
+    fileprivate func handleMessage(_ text: String, from senderChannel: Channel) {
         guard let data = text.data(using: .utf8) else {
             logger.error("ws: received non-UTF8 message, dropping")
             return
@@ -207,7 +228,7 @@ public final class WebSocketServer: @unchecked Sendable {
                 } else {
                     logger.info("res ok id=\(idStr)")
                 }
-                self.sendResponse(resp)
+                self.sendResponse(resp, to: senderChannel)
             }
         }
     }
@@ -216,9 +237,8 @@ public final class WebSocketServer: @unchecked Sendable {
         await requestHandler.handleRequest(request)
     }
 
-    private func sendResponse(_ response: JSONRPCResponse) {
-        guard let channel = clientChannel,
-              let data = try? JSONEncoder().encode(response) else { return }
+    private func sendResponse(_ response: JSONRPCResponse, to channel: Channel) {
+        guard let data = try? JSONEncoder().encode(response) else { return }
         channel.eventLoop.execute {
             let buffer = channel.allocator.buffer(data: data)
             let frame = WebSocketFrame(fin: true, opcode: .text, data: buffer)
@@ -274,10 +294,10 @@ private final class WebSocketHandler: ChannelInboundHandler, @unchecked Sendable
             let text = data.readString(length: data.readableBytes) ?? ""
             if frame.fin {
                 if textBuffer.isEmpty {
-                    server?.handleMessage(text)
+                    server?.handleMessage(text, from: context.channel)
                 } else {
                     textBuffer += text
-                    server?.handleMessage(textBuffer)
+                    server?.handleMessage(textBuffer, from: context.channel)
                     textBuffer = ""
                 }
             } else {
@@ -289,7 +309,7 @@ private final class WebSocketHandler: ChannelInboundHandler, @unchecked Sendable
             let text = data.readString(length: data.readableBytes) ?? ""
             textBuffer += text
             if frame.fin {
-                server?.handleMessage(textBuffer)
+                server?.handleMessage(textBuffer, from: context.channel)
                 textBuffer = ""
             }
 
@@ -298,7 +318,7 @@ private final class WebSocketHandler: ChannelInboundHandler, @unchecked Sendable
             context.writeAndFlush(wrapOutboundOut(pong), promise: nil)
 
         case .pong:
-            server?.handlePong()
+            server?.handlePong(context.channel)
 
         case .connectionClose:
             logger.info("ws: received connection close frame")
@@ -337,5 +357,4 @@ private final class HTTPByteBufferRequestDecoder: ChannelInboundHandler, Removab
 public enum WebSocketError: Error {
     case authFailed
     case bindFailed
-    case alreadyConnected
 }

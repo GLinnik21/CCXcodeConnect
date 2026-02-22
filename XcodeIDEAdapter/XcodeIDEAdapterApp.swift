@@ -22,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         try? SMAppService.mainApp.register()
-        Task { await coordinator.start() }
+        coordinator.start()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -33,12 +33,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @MainActor
 final class AppCoordinator: ObservableObject {
     @Published var xcodeRunning = false
-    @Published var claudeConnected = false
-    @Published var connectedPID: Int32?
-    @Published var workspaceName: String?
+    @Published var workspaceStates: [AdapterServerState] = []
 
     var statusIcon: String {
-        if claudeConnected && xcodeRunning {
+        let anyConnected = workspaceStates.contains { $0.claudeConnected }
+        if anyConnected && xcodeRunning {
             return "checkmark.circle.fill"
         } else if xcodeRunning {
             return "circle"
@@ -47,27 +46,20 @@ final class AppCoordinator: ObservableObject {
         }
     }
 
-    private let server = AdapterServer()
+    private let supervisor = AdapterSupervisor()
 
-    func start() async {
-        server.onStateChange = { [weak self] state in
+    func start() {
+        supervisor.onStateChange = { [weak self] states in
             Task { @MainActor in
                 guard let self else { return }
-                self.xcodeRunning = state.xcodeRunning
-                self.claudeConnected = state.claudeConnected
-                self.connectedPID = state.connectedPID
-                self.workspaceName = state.workspaceName
+                self.workspaceStates = states
+                self.xcodeRunning = states.first?.xcodeRunning ?? false
             }
         }
-
-        do {
-            try await server.start()
-        } catch {
-            print("Failed to start: \(error)")
-        }
+        supervisor.start()
     }
 
     func shutdown() {
-        server.shutdown()
+        supervisor.shutdown()
     }
 }

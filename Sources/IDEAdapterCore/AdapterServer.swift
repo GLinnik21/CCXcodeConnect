@@ -6,12 +6,16 @@ public struct AdapterServerState {
     public var claudeConnected: Bool
     public var connectedPID: Int32?
     public var workspaceName: String?
+    public var workspacePath: String?
+    public var port: Int?
 
-    public init(xcodeRunning: Bool = false, claudeConnected: Bool = false, connectedPID: Int32? = nil, workspaceName: String? = nil) {
+    public init(xcodeRunning: Bool = false, claudeConnected: Bool = false, connectedPID: Int32? = nil, workspaceName: String? = nil, workspacePath: String? = nil, port: Int? = nil) {
         self.xcodeRunning = xcodeRunning
         self.claudeConnected = claudeConnected
         self.connectedPID = connectedPID
         self.workspaceName = workspaceName
+        self.workspacePath = workspacePath
+        self.port = port
     }
 }
 
@@ -24,21 +28,33 @@ public final class AdapterServer: @unchecked Sendable {
     private var serverPort: Int?
     private var lockFileManager: LockFileManager?
     private var webSocketServer: WebSocketServer?
-    private var bridgeClient: MCPBridgeClient?
+    private var ownedBridgeClient: MCPBridgeClient?
+    private var sharedBridgeClient: (any ToolCallable)?
     private var toolRouter: MCPToolRouter?
     private var editorContext: EditorContext?
     private var xcodeMonitor: XcodeMonitor?
     private var workspacePoller: DispatchSourceTimer?
     private var lastWorkspacePaths: [String] = []
+    private let targetWorkspace: String?
 
-    public init() {}
+    public init(targetWorkspace: String? = nil, sharedBridgeClient: (any ToolCallable)? = nil) {
+        self.targetWorkspace = targetWorkspace
+        self.sharedBridgeClient = sharedBridgeClient
+    }
 
     @discardableResult
     public func start() async throws -> Int {
-        xcodeMonitor = XcodeMonitor { [weak self] running in
-            self?.handleXcodeStateChange(running: running)
+        if targetWorkspace == nil {
+            xcodeMonitor = XcodeMonitor { [weak self] running in
+                self?.handleXcodeStateChange(running: running)
+            }
+            xcodeMonitor?.startMonitoring()
         }
-        xcodeMonitor?.startMonitoring()
+
+        if let ws = targetWorkspace {
+            state.workspacePath = ws
+            state.workspaceName = URL(fileURLWithPath: ws).lastPathComponent
+        }
 
         let authToken = UUID().uuidString
         let server = WebSocketServer(authToken: authToken)
@@ -62,10 +78,15 @@ public final class AdapterServer: @unchecked Sendable {
 
         let port = try await server.start()
         self.serverPort = port
+        self.state.port = port
         self.webSocketServer = server
 
         let lockFile = LockFileManager(port: port, authToken: authToken)
-        lockFile.write(workspaceFolders: [])
+        if let ws = targetWorkspace {
+            lockFile.write(workspaceFolders: [ws])
+        } else {
+            lockFile.write(workspaceFolders: [])
+        }
         self.lockFileManager = lockFile
 
         if XcodeMonitor.isXcodeRunning() {
@@ -79,12 +100,12 @@ public final class AdapterServer: @unchecked Sendable {
         stopWorkspacePolling()
         xcodeMonitor?.stopMonitoring()
         editorContext?.stop()
-        bridgeClient?.stop()
+        ownedBridgeClient?.stop()
         lockFileManager?.remove()
         webSocketServer?.stop()
     }
 
-    private func handleXcodeStateChange(running: Bool) {
+    public func handleXcodeStateChange(running: Bool) {
         logger.info("Xcode \(running ? "launched" : "quit")")
         state.xcodeRunning = running
         onStateChange?(state)
@@ -97,41 +118,68 @@ public final class AdapterServer: @unchecked Sendable {
     }
 
     private func startBridge() {
-        guard bridgeClient == nil else { return }
-        logger.info("starting mcpbridge")
+        guard toolRouter == nil else { return }
 
-        let client = MCPBridgeClient()
-        self.bridgeClient = client
+        let client: any ToolCallable
+        if let shared = sharedBridgeClient {
+            logger.info("using shared mcpbridge\(targetWorkspace.map { " for \($0)" } ?? "")")
+            client = shared
+        } else {
+            logger.info("starting mcpbridge\(targetWorkspace.map { " for \($0)" } ?? "")")
+            let owned = MCPBridgeClient()
+            self.ownedBridgeClient = owned
+            client = owned
+        }
 
         let router = MCPToolRouter(bridgeClient: client)
         self.toolRouter = router
         webSocketServer?.toolRouter = router
 
-        let context = EditorContext { [weak self] notification in
+        let context = EditorContext(workspaceFilter: targetWorkspace) { [weak self] notification in
             self?.webSocketServer?.sendNotification(notification)
         }
         self.editorContext = context
         router.editorContext = context
 
-        let workspaces = WorkspaceDetector.detect()
-        lastWorkspacePaths = workspaces.map(\.path)
-        if let first = workspaces.first {
-            state.workspaceName = first.name
+        if targetWorkspace != nil {
+            lockFileManager?.write(workspaceFolders: [targetWorkspace!])
+        } else {
+            let workspaces = WorkspaceDetector.detect()
+            lastWorkspacePaths = workspaces.map(\.path)
+            if let first = workspaces.first {
+                state.workspaceName = first.name
+            }
+            logger.info("detected \(workspaces.count) workspace(s): \(workspaces.map(\.name).joined(separator: ", "))")
+            lockFileManager?.write(workspaceFolders: lastWorkspacePaths)
         }
-        logger.info("detected \(workspaces.count) workspace(s): \(workspaces.map(\.name).joined(separator: ", "))")
-        lockFileManager?.write(workspaceFolders: lastWorkspacePaths)
         onStateChange?(state)
         context.start()
-        startWorkspacePolling()
 
-        Task {
-            do {
-                try await client.start()
-                let tabId = try await Self.detectTabIdentifier(bridgeClient: client)
-                router.tabIdentifier = tabId
-                logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
-            } catch {
-                logger.error("failed to start bridge: \(error)")
+        if targetWorkspace == nil {
+            startWorkspacePolling()
+        }
+
+        let workspace = targetWorkspace
+        if let owned = ownedBridgeClient {
+            Task {
+                do {
+                    try await owned.start()
+                    let tabId = try await Self.detectTabIdentifier(bridgeClient: owned, forWorkspace: workspace)
+                    router.tabIdentifier = tabId
+                    logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
+                } catch {
+                    logger.error("failed to start bridge: \(error)")
+                }
+            }
+        } else {
+            Task {
+                do {
+                    let tabId = try await Self.detectTabIdentifier(bridgeClient: client, forWorkspace: workspace)
+                    router.tabIdentifier = tabId
+                    logger.info("tabIdentifier=\(tabId ?? "nil") for \(workspace ?? "default")")
+                } catch {
+                    logger.error("failed to detect tab: \(error)")
+                }
             }
         }
     }
@@ -141,8 +189,8 @@ public final class AdapterServer: @unchecked Sendable {
         stopWorkspacePolling()
         editorContext?.stop()
         editorContext = nil
-        bridgeClient?.stop()
-        bridgeClient = nil
+        ownedBridgeClient?.stop()
+        ownedBridgeClient = nil
         toolRouter = nil
         webSocketServer?.toolRouter = nil
         state.workspaceName = nil
@@ -164,9 +212,10 @@ public final class AdapterServer: @unchecked Sendable {
             self.state.workspaceName = workspaces.first?.name
             self.lockFileManager?.write(workspaceFolders: paths)
             self.onStateChange?(self.state)
-            if let client = self.bridgeClient {
+            let client: (any ToolCallable)? = self.ownedBridgeClient ?? self.sharedBridgeClient
+            if let client {
                 Task {
-                    let tabId = try? await Self.detectTabIdentifier(bridgeClient: client)
+                    let tabId = try? await Self.detectTabIdentifier(bridgeClient: client, forWorkspace: nil)
                     logger.info("workspace poll: updated tabIdentifier=\(tabId ?? "nil")")
                     self.toolRouter?.tabIdentifier = tabId
                 }
@@ -204,11 +253,13 @@ public final class AdapterServer: @unchecked Sendable {
         return nil
     }
 
-    private static func detectTabIdentifier(bridgeClient: MCPBridgeClient) async throws -> String? {
-        let result = try await bridgeClient.callTool(name: "XcodeListWindows", arguments: [:])
-        guard let textContent = result.content.first(where: { $0.type == "text" }),
-              let text = textContent.text else { return nil }
+    struct WindowInfo {
+        let tabIdentifier: String
+        let workspacePath: String
+        let isFront: Bool
+    }
 
+    static func parseWindowList(from text: String) -> [WindowInfo] {
         let message: String
         if let data = text.data(using: .utf8),
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -218,17 +269,54 @@ public final class AdapterServer: @unchecked Sendable {
             message = text
         }
 
+        var windows: [WindowInfo] = []
         for line in message.components(separatedBy: .newlines) {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            guard trimmed.hasPrefix("*") else { continue }
-            let content = String(trimmed.dropFirst()).trimmingCharacters(in: .whitespaces)
+            guard !trimmed.isEmpty else { continue }
+
+            let isFront = trimmed.hasPrefix("*")
+            let content: String
+            if isFront {
+                content = String(trimmed.dropFirst()).trimmingCharacters(in: .whitespaces)
+            } else {
+                content = trimmed
+            }
+
+            var tabId: String?
+            var wsPath: String?
             for part in content.components(separatedBy: ", ") {
                 let kv = part.components(separatedBy: ": ")
-                if kv.count >= 2 && kv[0].trimmingCharacters(in: .whitespaces) == "tabIdentifier" {
-                    return kv[1...].joined(separator: ": ").trimmingCharacters(in: .whitespaces)
-                }
+                guard kv.count >= 2 else { continue }
+                let key = kv[0].trimmingCharacters(in: .whitespaces)
+                let value = kv[1...].joined(separator: ": ").trimmingCharacters(in: .whitespaces)
+                if key == "tabIdentifier" { tabId = value }
+                if key == "workspacePath" { wsPath = value }
+            }
+
+            if let tabId, let wsPath {
+                windows.append(WindowInfo(tabIdentifier: tabId, workspacePath: wsPath, isFront: isFront))
             }
         }
-        return nil
+        return windows
+    }
+
+    static func detectTabIdentifier(bridgeClient: any ToolCallable, forWorkspace workspace: String? = nil) async throws -> String? {
+        let result = try await bridgeClient.callTool(name: "XcodeListWindows", arguments: [:])
+        guard let textContent = result.content.first(where: { $0.type == "text" }),
+              let text = textContent.text else { return nil }
+
+        let windows = parseWindowList(from: text)
+
+        if let workspace {
+            for w in windows {
+                let wsDir = URL(fileURLWithPath: w.workspacePath).deletingLastPathComponent().path
+                if wsDir == workspace || w.workspacePath.hasPrefix(workspace) {
+                    return w.tabIdentifier
+                }
+            }
+            return nil
+        }
+
+        return windows.first(where: { $0.isFront })?.tabIdentifier ?? windows.first?.tabIdentifier
     }
 }

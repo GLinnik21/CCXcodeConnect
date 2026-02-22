@@ -24,23 +24,32 @@ This repo has three targets managed via a `Package.swift` at the repo root:
 - **xcode-ide-adapter** (CLI executable) — thin entry point in `Sources/xcode-ide-adapter/`
 - **XcodeIDEAdapter.app** (Xcode project) — thin menu bar wrapper in `XcodeIDEAdapter/`, references the local package
 
+### Multi-Workspace Support
+
+The adapter supports N simultaneous Xcode windows. An `AdapterSupervisor` monitors Xcode and creates one `AdapterServer` per open workspace, each with its own WebSocket port, lock file, and editor context — but all sharing a single `MCPBridgeClient` connection to `xcrun mcpbridge`.
+
 ```
-Claude Code CLI ──WebSocket (MCP)──> AdapterServer (IDEAdapterCore)
-                                        ├── xcrun mcpbridge (STDIO JSON-RPC, 20 tools)
-                                        └── AppleScript → Xcode (selection, active file)
+AdapterSupervisor (XcodeMonitor + workspace polling)
+  ├── MCPBridgeClient → xcrun mcpbridge (shared, 1 process)
+  ├── AdapterServer(workspace: "/Users/x/ProjectA")
+  │     ├── WebSocketServer :54321 → Claude Code #1, #2, ...
+  │     ├── LockFile ~/.claude/ide/54321.lock
+  │     ├── MCPToolRouter (tabIdentifier=windowtab1)
+  │     └── EditorContext (filters files under /Users/x/ProjectA)
+  └── AdapterServer(workspace: "/Users/x/ProjectB")
+        ├── WebSocketServer :54322 → Claude Code #3
+        ├── LockFile ~/.claude/ide/54322.lock
+        ├── MCPToolRouter (tabIdentifier=windowtab2)
+        └── EditorContext (filters files under /Users/x/ProjectB)
 ```
 
-**AdapterServer** (`Sources/IDEAdapterCore/AdapterServer.swift`) orchestrates everything:
-- Starts `WebSocketServer` on a random port bound to 127.0.0.1
-- Writes a lock file to `~/.claude/ide/{port}.lock` so Claude Code discovers it
-- Monitors Xcode via `XcodeMonitor` (NSWorkspace notifications)
-- When Xcode launches: spawns `MCPBridgeClient` → `xcrun mcpbridge`, detects workspaces, starts `EditorContext` polling
-- When Xcode quits: tears down bridge and polling
-- Exposes `onStateChange` callback for UI or CLI status updates
+Each WebSocket server accepts multiple Claude Code clients simultaneously — notifications are broadcast to all, responses are routed back to the sender.
 
-**Request flow**: WebSocket frame → `WebSocketServer.handleMessage` → JSON-RPC decode → `MCPToolRouter.callTool` → either local IDE tool handler or proxy to mcpbridge.
+The CLI also supports `--workspace <path>` for running a single targeted instance with its own bridge client.
 
-**Editor context**: `EditorContext` polls Xcode every 500ms via AppleScript (`osascript`) for active file path and selection range, sends `selection_changed` JSON-RPC notifications over WebSocket.
+**Request flow**: WebSocket frame → `WebSocketServer.handleMessage` → JSON-RPC decode → `MCPToolRouter.callTool` → either local IDE tool handler or proxy to mcpbridge (with per-workspace `tabIdentifier`).
+
+**Editor context**: `EditorContext` polls Xcode every 500ms via AppleScript (`osascript`) for active file path and selection range, sends `selection_changed` JSON-RPC notifications over WebSocket. Each worker filters events by its `workspaceFilter` path prefix.
 
 ## Key Implementation Details
 

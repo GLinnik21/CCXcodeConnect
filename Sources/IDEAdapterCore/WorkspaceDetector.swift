@@ -40,12 +40,21 @@ public enum WorkspaceDetector {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else { return [] }
 
+        let projectExtensions: Set<String> = ["xcodeproj", "xcworkspace", "playground"]
         let results = output.components(separatedBy: ", ").compactMap { path -> WorkspaceInfo? in
             let trimmed = path.trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { return nil }
             let url = URL(fileURLWithPath: trimmed)
-            let name = url.lastPathComponent
-            let folder = url.deletingLastPathComponent().path
+            let ext = url.pathExtension.lowercased()
+            let folder: String
+            let name: String
+            if projectExtensions.contains(ext) {
+                folder = url.deletingLastPathComponent().path
+                name = URL(fileURLWithPath: folder).lastPathComponent
+            } else {
+                folder = url.path
+                name = url.lastPathComponent
+            }
             return WorkspaceInfo(name: name, path: folder)
         }
         logger.debug("workspace detect: found \(results.count) workspaces: \(results.map(\.name).joined(separator: ", "))")

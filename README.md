@@ -44,20 +44,30 @@ make uninstall
 xcodebuild -scheme XcodeIDEAdapter -configuration Release build
 ```
 
+## CLI
+
+The headless CLI can also be used directly:
+
+```bash
+swift run xcode-ide-adapter                    # supervisor mode (auto-manages all workspaces)
+swift run xcode-ide-adapter --workspace /path  # single targeted workspace
+```
+
 ## Usage
 
 1. Install the app (`make install`)
-2. Open a project in Xcode — the adapter appears in the menu bar
-3. In Claude Code, run `/ide` to connect
+2. Open one or more projects in Xcode — the adapter appears in the menu bar
+3. In each Claude Code session, run `/ide` to connect to the matching workspace
 4. Claude Code now has access to Xcode tools via the MCP server
 
-The adapter automatically detects when you switch projects in Xcode and updates the connection.
+Each Xcode window gets its own adapter instance with a dedicated WebSocket port and lock file. Multiple Claude Code clients can connect to the same workspace simultaneously.
 
 ## Architecture
 
 The app registers as a login item via `SMAppService` and:
 
-- Starts a WebSocket MCP server on a random port (127.0.0.1)
-- Writes a lock file to `~/.claude/ide/{port}.lock` for Claude Code discovery
-- Spawns `xcrun mcpbridge` to access Xcode's 20 built-in tools
-- Polls for editor context (active file, selection) via AppleScript
+- Runs an `AdapterSupervisor` that monitors Xcode for open workspaces
+- Creates one `AdapterServer` per workspace, each with its own WebSocket port and lock file
+- Shares a single `xcrun mcpbridge` connection across all workspaces (routed by `tabIdentifier`)
+- Polls for editor context (active file, selection) via AppleScript, filtered per workspace
+- Supports multiple Claude Code clients per workspace (notifications broadcast, responses routed)

@@ -17,6 +17,7 @@ public struct SelectionSnapshot: Sendable {
 public final class EditorContext: @unchecked Sendable {
     private var timer: DispatchSourceTimer?
     private let sendNotification: (JSONRPCNotification) -> Void
+    private let workspaceFilter: String?
     private var lastFilePath: String?
     private var lastSelectionStart: Int?
     private var lastSelectionEnd: Int?
@@ -27,7 +28,8 @@ public final class EditorContext: @unchecked Sendable {
         snapshotLock.withLock { _lastSnapshot }
     }
 
-    public init(sendNotification: @escaping (JSONRPCNotification) -> Void) {
+    public init(workspaceFilter: String? = nil, sendNotification: @escaping (JSONRPCNotification) -> Void) {
+        self.workspaceFilter = workspaceFilter
         self.sendNotification = sendNotification
     }
 
@@ -50,6 +52,10 @@ public final class EditorContext: @unchecked Sendable {
 
     private func poll() {
         guard let (filePath, rangeStart, rangeEnd) = queryXcode() else { return }
+
+        if let filter = workspaceFilter, !filePath.hasPrefix(filter) {
+            return
+        }
 
         if filePath == lastFilePath && rangeStart == lastSelectionStart && rangeEnd == lastSelectionEnd {
             return

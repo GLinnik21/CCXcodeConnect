@@ -1,4 +1,5 @@
 import SwiftUI
+import IDEAdapterCore
 
 struct MenuBarView: View {
     @EnvironmentObject var coordinator: AppCoordinator
@@ -12,16 +13,23 @@ struct MenuBarView: View {
                 Text(statusText)
             }
 
-            if let pid = coordinator.connectedPID {
-                Text("Client PID: \(pid)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            if !coordinator.workspaceStates.isEmpty {
+                Divider()
 
-            if let workspace = coordinator.workspaceName {
-                Text("Workspace: \(workspace)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                ForEach(Array(coordinator.workspaceStates.enumerated()), id: \.offset) { _, state in
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(state.claudeConnected ? Color.green : Color.yellow)
+                            .frame(width: 6, height: 6)
+                        Text(state.workspaceName ?? "Unknown")
+                            .font(.caption)
+                        if let pid = state.connectedPID {
+                            Text("(PID \(pid))")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
             }
 
             Divider()
@@ -36,7 +44,8 @@ struct MenuBarView: View {
     }
 
     private var statusColor: Color {
-        if coordinator.claudeConnected && coordinator.xcodeRunning {
+        let anyConnected = coordinator.workspaceStates.contains { $0.claudeConnected }
+        if anyConnected && coordinator.xcodeRunning {
             return .green
         } else if coordinator.xcodeRunning {
             return .yellow
@@ -46,12 +55,17 @@ struct MenuBarView: View {
     }
 
     private var statusText: String {
-        if coordinator.claudeConnected && coordinator.xcodeRunning {
-            return "Connected"
-        } else if coordinator.xcodeRunning {
-            return "Xcode running, waiting for Claude"
-        } else {
+        let connectedCount = coordinator.workspaceStates.filter { $0.claudeConnected }.count
+        let totalCount = coordinator.workspaceStates.count
+
+        if !coordinator.xcodeRunning {
             return "Xcode not running"
+        } else if totalCount == 0 {
+            return "No workspaces detected"
+        } else if connectedCount > 0 {
+            return "\(totalCount) workspace\(totalCount == 1 ? "" : "s"), \(connectedCount) connected"
+        } else {
+            return "\(totalCount) workspace\(totalCount == 1 ? "" : "s"), waiting for Claude"
         }
     }
 }
