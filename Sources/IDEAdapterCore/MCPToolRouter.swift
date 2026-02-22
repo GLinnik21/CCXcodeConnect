@@ -145,8 +145,8 @@ public final class MCPToolRouter: @unchecked Sendable {
         case "openDiff":
             logger.info("IDE tool call: openDiff")
             return await OpenDiffTool.execute(arguments: arguments)
-        case "closeDiff":
-            logger.info("IDE tool call: closeDiff")
+        case "closeDiff", "close_tab":
+            logger.info("IDE tool call: \(name)")
             return await CloseDiffTool.execute(arguments: arguments)
         case "closeAllDiffTabs":
             logger.info("IDE tool call: closeAllDiffTabs")
