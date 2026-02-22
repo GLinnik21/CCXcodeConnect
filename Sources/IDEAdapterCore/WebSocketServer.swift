@@ -18,6 +18,12 @@ public final class WebSocketServer: @unchecked Sendable {
     public var onClientConnected: (() -> Void)?
     public var onClientDisconnected: (() -> Void)?
 
+    private static let pingInterval: TimeInterval = 30
+    private static let pongTimeout: TimeInterval = 60
+    private var pingTimer: DispatchSourceTimer?
+    private var lastPongTime: Date = Date()
+    private var lastPingScheduledTime: Date = Date()
+
     public init(authToken: String) {
         self.authToken = authToken
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -83,6 +89,7 @@ public final class WebSocketServer: @unchecked Sendable {
 
     public func stop() {
         stopped = true
+        stopPingTimer()
         let client = clientChannel
         let server = channel
         clientChannel = nil
@@ -102,15 +109,67 @@ public final class WebSocketServer: @unchecked Sendable {
         }
     }
 
+    private func startPingTimer() {
+        stopPingTimer()
+        lastPongTime = Date()
+        lastPingScheduledTime = Date()
+        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
+        timer.schedule(deadline: .now() + Self.pingInterval, repeating: Self.pingInterval)
+        timer.setEventHandler { [weak self] in
+            self?.pingTick()
+        }
+        timer.resume()
+        self.pingTimer = timer
+    }
+
+    private func stopPingTimer() {
+        pingTimer?.cancel()
+        pingTimer = nil
+    }
+
+    private func pingTick() {
+        let now = Date()
+        let elapsed = now.timeIntervalSince(lastPingScheduledTime)
+        lastPingScheduledTime = now
+
+        if elapsed > Self.pingInterval * 1.5 {
+            logger.info("sleep detected (\(Int(elapsed))s since last tick), resetting pong timestamp")
+            lastPongTime = now
+        }
+
+        if now.timeIntervalSince(lastPongTime) > Self.pongTimeout {
+            logger.warning("pong timeout, closing client connection")
+            let ch = clientChannel
+            clientChannel = nil
+            ch?.close(promise: nil)
+            stopPingTimer()
+            onClientDisconnected?()
+            return
+        }
+
+        guard let channel = clientChannel else { return }
+        channel.eventLoop.execute {
+            let emptyBuffer = channel.allocator.buffer(capacity: 0)
+            let frame = WebSocketFrame(fin: true, opcode: .ping, data: emptyBuffer)
+            channel.writeAndFlush(frame, promise: nil)
+        }
+    }
+
+    fileprivate func handlePong() {
+        lastPongTime = Date()
+    }
+
     fileprivate func handleConnected(_ channel: Channel) {
         logger.info("client connected: \(channel.remoteAddress?.description ?? "?")")
         self.clientChannel = channel
+        startPingTimer()
         onClientConnected?()
     }
 
     fileprivate func handleDisconnected(_ channel: Channel) {
         guard self.clientChannel === channel else { return }
         logger.info("client disconnected")
+        stopPingTimer()
         self.clientChannel = nil
         onClientDisconnected?()
     }
@@ -186,6 +245,9 @@ public final class WebSocketServer: @unchecked Sendable {
                 return JSONRPCResponse(id: request.id, error: .internalError)
             }
             return JSONRPCResponse(id: request.id, result: jsonValue)
+
+        case "prompts/list":
+            return JSONRPCResponse(id: request.id, result: .object(["prompts": .array([])]))
 
         case "ping":
             return JSONRPCResponse(id: request.id, result: .object([:]))
@@ -279,6 +341,9 @@ private final class WebSocketHandler: ChannelInboundHandler, @unchecked Sendable
         case .ping:
             let pong = WebSocketFrame(fin: true, opcode: .pong, data: frame.unmaskedData)
             context.writeAndFlush(wrapOutboundOut(pong), promise: nil)
+
+        case .pong:
+            server?.handlePong()
 
         case .connectionClose:
             let close = WebSocketFrame(fin: true, opcode: .connectionClose, data: context.channel.allocator.buffer(capacity: 0))
