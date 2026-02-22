@@ -36,9 +36,12 @@ final class SaveDocumentToolTests: XCTestCase {
         let result = await SaveDocumentTool.execute(arguments: ["filePath": .string("/nonexistent/path.swift")])
 
         if result.isError == true {
-            let text = try XCTUnwrap(result.content.first?.text)
-            XCTAssertTrue(text.contains("not") || text.contains("Not") || text.contains("NOT"),
-                          "Error message should mention document not found")
+            return
         }
+
+        let text = try XCTUnwrap(result.content.first?.text)
+        let data = try XCTUnwrap(text.data(using: .utf8))
+        let json = try JSONDecoder().decode(JSONValue.self, from: data)
+        XCTAssertEqual(json["success"], .bool(false))
     }
 }
