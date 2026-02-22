@@ -3,11 +3,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "XcodeIDEAdapter",
+    name: "CCXcodeConnect",
     platforms: [.macOS(.v14)],
     products: [
-        .library(name: "IDEAdapterCore", targets: ["IDEAdapterCore"]),
-        .executable(name: "xcode-ide-adapter", targets: ["xcode-ide-adapter"]),
+        .library(name: "XcodeConnectCore", targets: ["XcodeConnectCore"]),
+        .executable(name: "cc-xcode-connect", targets: ["cc-xcode-connect"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
@@ -15,7 +15,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "IDEAdapterCore",
+            name: "XcodeConnectCore",
             dependencies: [
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
@@ -26,15 +26,15 @@ let package = Package(
             ]
         ),
         .executableTarget(
-            name: "xcode-ide-adapter",
+            name: "cc-xcode-connect",
             dependencies: [
-                "IDEAdapterCore",
+                "XcodeConnectCore",
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
         .testTarget(
-            name: "IDEAdapterCoreTests",
-            dependencies: ["IDEAdapterCore"]
+            name: "XcodeConnectCoreTests",
+            dependencies: ["XcodeConnectCore"]
         ),
     ]
 )

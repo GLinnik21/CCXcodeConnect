@@ -1,9 +1,9 @@
-import IDEAdapterCore
+import XcodeConnectCore
 import ServiceManagement
 import SwiftUI
 
 @main
-struct XcodeIDEAdapterApp: App {
+struct CCXcodeConnectApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
@@ -11,7 +11,7 @@ struct XcodeIDEAdapterApp: App {
             MenuBarView()
                 .environmentObject(appDelegate.coordinator)
         } label: {
-            Label("Xcode IDE Adapter", systemImage: appDelegate.coordinator.statusIcon)
+            Label("CC Xcode Connect", systemImage: appDelegate.coordinator.statusIcon)
         }
     }
 }

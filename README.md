@@ -1,4 +1,4 @@
-# Xcode IDE Adapter
+# CC Xcode Connect
 
 A macOS menu bar app that connects [Claude Code](https://claude.ai/code) to Xcode via the `/ide` integration.
 
@@ -41,7 +41,7 @@ make uninstall
 ## Build from Source
 
 ```bash
-xcodebuild -scheme XcodeIDEAdapter -configuration Release build
+xcodebuild -scheme CCXcodeConnect -configuration Release build
 ```
 
 ## CLI
@@ -49,8 +49,8 @@ xcodebuild -scheme XcodeIDEAdapter -configuration Release build
 The headless CLI can also be used directly:
 
 ```bash
-swift run xcode-ide-adapter                    # supervisor mode (auto-manages all workspaces)
-swift run xcode-ide-adapter --workspace /path  # single targeted workspace
+swift run cc-xcode-connect                    # supervisor mode (auto-manages all workspaces)
+swift run cc-xcode-connect --workspace /path  # single targeted workspace
 ```
 
 ## Usage

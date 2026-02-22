@@ -1,5 +1,5 @@
 import XCTest
-@testable import IDEAdapterCore
+@testable import XcodeConnectCore
 
 final class TextOffsetConverterTests: XCTestCase {
 

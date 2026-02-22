@@ -1,6 +1,6 @@
-APP_NAME = XcodeIDEAdapter
+APP_NAME = CCXcodeConnect
 INSTALL_DIR = $(HOME)/Applications
-SCHEME = XcodeIDEAdapter
+SCHEME = CCXcodeConnect
 BUILD_DIR = .build/xcode
 
 .PHONY: build install uninstall clean build-cli run
@@ -29,4 +29,4 @@ build-cli:
 	swift build -c release
 
 run:
-	swift run xcode-ide-adapter
+	swift run cc-xcode-connect

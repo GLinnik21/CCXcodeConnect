@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 swift build                                                        # build library + CLI
-swift run xcode-ide-adapter                                        # run CLI (headless)
-xcodebuild -scheme XcodeIDEAdapter -configuration Release build    # build .app
+swift run cc-xcode-connect                                         # run CLI (headless)
+xcodebuild -scheme CCXcodeConnect -configuration Release build     # build .app
 make install                                                       # build + install .app to ~/Applications
 make uninstall                                                     # remove app + lock files
 ```
@@ -20,9 +20,9 @@ The .app registers as a login item via `SMAppService.mainApp` so it starts autom
 
 This repo has three targets managed via a `Package.swift` at the repo root:
 
-- **IDEAdapterCore** (library) — all core logic in `Sources/IDEAdapterCore/`
-- **xcode-ide-adapter** (CLI executable) — thin entry point in `Sources/xcode-ide-adapter/`
-- **XcodeIDEAdapter.app** (Xcode project) — thin menu bar wrapper in `XcodeIDEAdapter/`, references the local package
+- **XcodeConnectCore** (library) — all core logic in `Sources/XcodeConnectCore/`
+- **cc-xcode-connect** (CLI executable) — thin entry point in `Sources/cc-xcode-connect/`
+- **CCXcodeConnect.app** (Xcode project) — thin menu bar wrapper in `CCXcodeConnect/`, references the local package
 
 ### Multi-Workspace Support
 

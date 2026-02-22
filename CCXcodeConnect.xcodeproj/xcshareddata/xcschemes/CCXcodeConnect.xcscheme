@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "838E77082F4A4489000CC80C"
-               BuildableName = "XcodeIDEAdapter.app"
-               BlueprintName = "XcodeIDEAdapter"
-               ReferencedContainer = "container:XcodeIDEAdapter.xcodeproj">
+               BuildableName = "CCXcodeConnect.app"
+               BlueprintName = "CCXcodeConnect"
+               ReferencedContainer = "container:CCXcodeConnect.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,9 +45,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "838E77082F4A4489000CC80C"
-            BuildableName = "XcodeIDEAdapter.app"
-            BlueprintName = "XcodeIDEAdapter"
-            ReferencedContainer = "container:XcodeIDEAdapter.xcodeproj">
+            BuildableName = "CCXcodeConnect.app"
+            BlueprintName = "CCXcodeConnect"
+            ReferencedContainer = "container:CCXcodeConnect.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -62,9 +62,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "838E77082F4A4489000CC80C"
-            BuildableName = "XcodeIDEAdapter.app"
-            BlueprintName = "XcodeIDEAdapter"
-            ReferencedContainer = "container:XcodeIDEAdapter.xcodeproj">
+            BuildableName = "CCXcodeConnect.app"
+            BlueprintName = "CCXcodeConnect"
+            ReferencedContainer = "container:CCXcodeConnect.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

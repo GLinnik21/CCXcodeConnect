@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BBBB00032F4A0001000CC80C /* IDEAdapterCore in Frameworks */ = {isa = PBXBuildFile; productRef = BBBB00022F4A0001000CC80C /* IDEAdapterCore */; };
+		BBBB00032F4A0001000CC80C /* XcodeConnectCore in Frameworks */ = {isa = PBXBuildFile; productRef = BBBB00022F4A0001000CC80C /* XcodeConnectCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +24,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = XcodeIDEAdapter.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		838E77092F4A4489000CC80C /* CCXcodeConnect.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CCXcodeConnect.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -33,17 +33,17 @@
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 838E77082F4A4489000CC80C /* XcodeIDEAdapter */;
+			target = 838E77082F4A4489000CC80C /* CCXcodeConnect */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		838E77842F4A4775000CC80C /* XcodeIDEAdapter */ = {
+		838E77842F4A4775000CC80C /* CCXcodeConnect */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				CCCC00012F4A0001000CC80C /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
-			path = XcodeIDEAdapter;
+			path = CCXcodeConnect;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -53,7 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBBB00032F4A0001000CC80C /* IDEAdapterCore in Frameworks */,
+				BBBB00032F4A0001000CC80C /* XcodeConnectCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,7 +63,7 @@
 		838E77002F4A4489000CC80C = {
 			isa = PBXGroup;
 			children = (
-				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
+				838E77842F4A4775000CC80C /* CCXcodeConnect */,
 				838E770A2F4A4489000CC80C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -71,7 +71,7 @@
 		838E770A2F4A4489000CC80C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */,
+				838E77092F4A4489000CC80C /* CCXcodeConnect.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,9 +79,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		838E77082F4A4489000CC80C /* XcodeIDEAdapter */ = {
+		838E77082F4A4489000CC80C /* CCXcodeConnect */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 838E77142F4A448B000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapter" */;
+			buildConfigurationList = 838E77142F4A448B000CC80C /* Build configuration list for PBXNativeTarget "CCXcodeConnect" */;
 			buildPhases = (
 				838E77052F4A4489000CC80C /* Sources */,
 				838E77062F4A4489000CC80C /* Frameworks */,
@@ -93,14 +93,14 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				838E77842F4A4775000CC80C /* XcodeIDEAdapter */,
+				838E77842F4A4775000CC80C /* CCXcodeConnect */,
 			);
-			name = XcodeIDEAdapter;
+			name = CCXcodeConnect;
 			packageProductDependencies = (
-				BBBB00022F4A0001000CC80C /* IDEAdapterCore */,
+				BBBB00022F4A0001000CC80C /* XcodeConnectCore */,
 			);
-			productName = XcodeIDEAdapter;
-			productReference = 838E77092F4A4489000CC80C /* XcodeIDEAdapter.app */;
+			productName = CCXcodeConnect;
+			productReference = 838E77092F4A4489000CC80C /* CCXcodeConnect.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -118,7 +118,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 838E77042F4A4489000CC80C /* Build configuration list for PBXProject "XcodeIDEAdapter" */;
+			buildConfigurationList = 838E77042F4A4489000CC80C /* Build configuration list for PBXProject "CCXcodeConnect" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -135,7 +135,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				838E77082F4A4489000CC80C /* XcodeIDEAdapter */,
+				838E77082F4A4489000CC80C /* CCXcodeConnect */,
 			);
 		};
 /* End PBXProject section */
@@ -290,14 +290,14 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = XcodeIDEAdapter/Info.plist;
+				INFOPLIST_FILE = CCXcodeConnect/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beb.CCXcodeConnect;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -316,14 +316,14 @@
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = XcodeIDEAdapter/Info.plist;
+				INFOPLIST_FILE = CCXcodeConnect/Info.plist;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.beb.XcodeIDEAdapter;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beb.CCXcodeConnect;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -334,7 +334,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		838E77042F4A4489000CC80C /* Build configuration list for PBXProject "XcodeIDEAdapter" */ = {
+		838E77042F4A4489000CC80C /* Build configuration list for PBXProject "CCXcodeConnect" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				838E77122F4A448B000CC80C /* Debug */,
@@ -343,7 +343,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		838E77142F4A448B000CC80C /* Build configuration list for PBXNativeTarget "XcodeIDEAdapter" */ = {
+		838E77142F4A448B000CC80C /* Build configuration list for PBXNativeTarget "CCXcodeConnect" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				838E77152F4A448B000CC80C /* Debug */,
@@ -362,9 +362,9 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BBBB00022F4A0001000CC80C /* IDEAdapterCore */ = {
+		BBBB00022F4A0001000CC80C /* XcodeConnectCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			productName = IDEAdapterCore;
+			productName = XcodeConnectCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -122,7 +122,7 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
             "protocolVersion": .string("2024-11-05"),
             "capabilities": .object([:]),
             "clientInfo": .object([
-                "name": .string("xcode-ide-adapter"),
+                "name": .string("cc-xcode-connect"),
                 "version": .string("1.0.0")
             ])
         ])

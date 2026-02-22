@@ -1,5 +1,5 @@
 import Foundation
-import IDEAdapterCore
+import XcodeConnectCore
 import Logging
 
 LoggingSystem.bootstrap { StreamLogHandler.standardError(label: $0) }

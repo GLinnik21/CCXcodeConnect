@@ -1,5 +1,5 @@
 import XCTest
-@testable import IDEAdapterCore
+@testable import XcodeConnectCore
 
 final class MCPRequestHandlerTests: XCTestCase {
 
@@ -12,7 +12,7 @@ final class MCPRequestHandlerTests: XCTestCase {
 
         let result = try XCTUnwrap(response.result)
         XCTAssertEqual(result["protocolVersion"]?.stringValue, "2024-11-05")
-        XCTAssertEqual(result["serverInfo"]?["name"]?.stringValue, "xcode-ide-adapter")
+        XCTAssertEqual(result["serverInfo"]?["name"]?.stringValue, "cc-xcode-connect")
     }
 
     func testNotificationsInitializedReturnsNil() async {

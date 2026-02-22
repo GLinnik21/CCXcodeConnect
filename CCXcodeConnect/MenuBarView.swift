@@ -1,5 +1,5 @@
 import SwiftUI
-import IDEAdapterCore
+import XcodeConnectCore
 
 struct MenuBarView: View {
     @EnvironmentObject var coordinator: AppCoordinator
