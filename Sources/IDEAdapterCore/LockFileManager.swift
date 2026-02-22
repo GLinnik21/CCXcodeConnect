@@ -1,4 +1,7 @@
 import Foundation
+import Logging
+
+private let logger = Logger(label: "lockfile")
 
 public final class LockFileManager {
     private let port: Int
@@ -16,6 +19,7 @@ public final class LockFileManager {
         try? FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
         chmod(dir, 0o700)
 
+        logger.info("lock file path: \(lockFilePath)")
         Self.cleanStaleLocks(in: dir)
     }
 
@@ -33,6 +37,7 @@ public final class LockFileManager {
                   pid != myPid else { continue }
 
             if kill(pid, 0) != 0 {
+                logger.info("removing stale lock: \(file) (pid \(pid) not running)")
                 try? fm.removeItem(atPath: path)
             }
         }
@@ -48,12 +53,17 @@ public final class LockFileManager {
             "authToken": authToken
         ]
 
-        guard let data = try? JSONSerialization.data(withJSONObject: lock, options: [.sortedKeys]) else { return }
+        guard let data = try? JSONSerialization.data(withJSONObject: lock, options: [.sortedKeys]) else {
+            logger.error("failed to serialize lock file JSON")
+            return
+        }
         FileManager.default.createFile(atPath: lockFilePath, contents: data)
         chmod(lockFilePath, 0o600)
+        logger.info("wrote lock file: folders=\(workspaceFolders)")
     }
 
     public func remove() {
+        logger.info("removing lock file \(lockFilePath)")
         try? FileManager.default.removeItem(atPath: lockFilePath)
     }
 

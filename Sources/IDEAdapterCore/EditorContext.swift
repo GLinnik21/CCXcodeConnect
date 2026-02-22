@@ -32,6 +32,7 @@ public final class EditorContext: @unchecked Sendable {
     }
 
     public func start() {
+        logger.info("editor context polling started (500ms)")
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
         timer.schedule(deadline: .now(), repeating: .milliseconds(500))
         timer.setEventHandler { [weak self] in
@@ -42,6 +43,7 @@ public final class EditorContext: @unchecked Sendable {
     }
 
     public func stop() {
+        logger.info("editor context polling stopped")
         timer?.cancel()
         timer = nil
     }
@@ -179,18 +181,33 @@ public final class EditorContext: @unchecked Sendable {
             try process.run()
             process.waitUntilExit()
         } catch {
+            logger.error("queryXcode: failed to run osascript: \(error)")
             return nil
         }
 
-        guard process.terminationStatus == 0 else { return nil }
+        guard process.terminationStatus == 0 else {
+            logger.debug("queryXcode: osascript exited with \(process.terminationStatus)")
+            return nil
+        }
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else { return nil }
+        guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            logger.warning("queryXcode: failed to read osascript output")
+            return nil
+        }
+
+        if output == "NO_WINDOW" || output == "NO_FILE" {
+            logger.debug("queryXcode: \(output)")
+            return nil
+        }
 
         let parts = output.components(separatedBy: "||")
         guard parts.count == 3,
               let start = Int(parts[1]),
-              let end = Int(parts[2]) else { return nil }
+              let end = Int(parts[2]) else {
+            logger.warning("queryXcode: unexpected output format: \(output.prefix(100))")
+            return nil
+        }
 
         return (parts[0], start, end)
     }

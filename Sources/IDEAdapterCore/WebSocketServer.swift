@@ -179,11 +179,15 @@ public final class WebSocketServer: @unchecked Sendable {
     }
 
     fileprivate func handleMessage(_ text: String) {
-        guard let data = text.data(using: .utf8) else { return }
+        guard let data = text.data(using: .utf8) else {
+            logger.error("ws: received non-UTF8 message, dropping")
+            return
+        }
 
         let decoder = JSONDecoder()
         guard let request = try? decoder.decode(JSONRPCRequest.self, from: data) else {
-            logger.warning("failed to decode request")
+            let preview = String(text.prefix(200))
+            logger.warning("ws: failed to decode JSON-RPC request: \(preview)")
             return
         }
 
@@ -297,17 +301,19 @@ private final class WebSocketHandler: ChannelInboundHandler, @unchecked Sendable
             server?.handlePong()
 
         case .connectionClose:
+            logger.info("ws: received connection close frame")
             let close = WebSocketFrame(fin: true, opcode: .connectionClose, data: context.channel.allocator.buffer(capacity: 0))
             context.writeAndFlush(wrapOutboundOut(close)).whenComplete { _ in
                 context.close(promise: nil)
             }
 
         default:
-            break
+            logger.warning("ws: unrecognized frame opcode: \(frame.opcode)")
         }
     }
 
     func errorCaught(context: ChannelHandlerContext, error: Error) {
+        logger.error("ws: channel error: \(error)")
         context.close(promise: nil)
     }
 }

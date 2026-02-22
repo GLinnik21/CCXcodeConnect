@@ -1,4 +1,7 @@
 import Foundation
+import Logging
+
+private let logger = Logger(label: "bridge")
 
 public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     private var process: Process?
@@ -33,27 +36,32 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
             self?.handleData(data)
         }
 
-        process.terminationHandler = { [weak self] _ in
+        process.terminationHandler = { [weak self] proc in
             guard let self else { return }
+            logger.warning("mcpbridge process terminated with code \(proc.terminationStatus)")
             let pending = self.lock.withLock { () -> [JSONRPCId: CheckedContinuation<JSONValue, Error>] in
                 self.isRunning = false
                 let p = self.pendingRequests
                 self.pendingRequests.removeAll()
                 return p
             }
+            logger.debug("bridge: failing \(pending.count) pending requests")
             for (_, cont) in pending {
                 cont.resume(throwing: BridgeError.processTerminated)
             }
         }
 
+        logger.info("starting mcpbridge process (xcrun mcpbridge)")
         try process.run()
         isRunning = true
 
         try await Task.sleep(nanoseconds: 500_000_000)
         try await initialize()
+        logger.info("mcpbridge initialized")
     }
 
     public func stop() {
+        logger.info("stopping mcpbridge")
         stdinPipe?.fileHandleForWriting.closeFile()
         stdoutPipe?.fileHandleForReading.readabilityHandler = nil
         if process?.isRunning == true {
@@ -79,6 +87,8 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     }
 
     public func callTool(name: String, arguments: [String: JSONValue]) async throws -> MCPToolResult {
+        logger.info("bridge callTool: \(name)")
+        logger.debug("bridge callTool args: \(arguments.keys.joined(separator: ", "))")
         let params: JSONValue = .object([
             "name": .string(name),
             "arguments": .object(arguments)
@@ -86,6 +96,7 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
         let result = try await sendRequest(method: "tools/call", params: params)
 
         guard let contentArray = result["content"]?.arrayValue else {
+            logger.warning("bridge callTool \(name): no content array in response")
             return .text("No content in response")
         }
 
@@ -120,7 +131,10 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     }
 
     private func sendRequest(method: String, params: JSONValue? = nil) async throws -> JSONValue {
-        guard isRunning else { throw BridgeError.notRunning }
+        guard isRunning else {
+            logger.error("bridge sendRequest \(method): not running")
+            throw BridgeError.notRunning
+        }
 
         let id: JSONRPCId = lock.withLock {
             let current = nextId
@@ -134,10 +148,12 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
             let request = JSONRPCRequest(method: method, params: params, id: id)
             guard let data = try? JSONEncoder().encode(request) else {
                 _ = lock.withLock { pendingRequests.removeValue(forKey: id) }
+                logger.error("bridge: failed to encode request \(method) id=\(id)")
                 continuation.resume(throwing: BridgeError.encodingFailed)
                 return
             }
 
+            logger.debug("bridge -> \(method) id=\(id)")
             var message = data
             message.append(contentsOf: [0x0a])
             stdinPipe?.fileHandleForWriting.write(message)
@@ -165,15 +181,28 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     }
 
     private func handleLine(_ data: Data) {
-        guard let response = try? JSONDecoder().decode(JSONRPCResponse.self, from: data) else { return }
-        guard let id = response.id else { return }
+        guard let response = try? JSONDecoder().decode(JSONRPCResponse.self, from: data) else {
+            let raw = String(data: data, encoding: .utf8) ?? "<binary \(data.count) bytes>"
+            logger.warning("bridge: unrecognized message from mcpbridge: \(raw)")
+            return
+        }
+        guard let id = response.id else {
+            logger.debug("bridge: received response without id (notification?)")
+            return
+        }
 
         let continuation = lock.withLock { pendingRequests.removeValue(forKey: id) }
 
         if let error = response.error {
+            logger.error("bridge <- error id=\(id): [\(error.code)] \(error.message)")
             continuation?.resume(throwing: BridgeError.rpcError(error.code, error.message))
         } else {
+            logger.debug("bridge <- ok id=\(id)")
             continuation?.resume(returning: response.result ?? .null)
+        }
+
+        if continuation == nil {
+            logger.warning("bridge: received response for unknown id=\(id) (no pending request)")
         }
     }
 }

@@ -176,15 +176,18 @@ public final class MCPToolRouter: @unchecked Sendable {
             logger.info("IDE tool call: saveDocument path=\(arguments["filePath"]?.stringValue ?? "nil")")
             return await SaveDocumentTool.execute(arguments: arguments)
         default:
+            logger.warning("unknown tool requested: \(name)")
             return .error("Unknown tool: \(name)")
         }
     }
 
     private func executeCode(arguments: [String: JSONValue]) async -> MCPToolResult {
         guard let tabId = tabIdentifier else {
+            logger.warning("executeCode: no tabIdentifier")
             return .error("No Xcode workspace connected")
         }
         guard let code = arguments["code"]?.stringValue else {
+            logger.warning("executeCode: missing code parameter")
             return .error("Missing code parameter")
         }
 
@@ -197,9 +200,11 @@ public final class MCPToolRouter: @unchecked Sendable {
             args["sourceFilePath"] = .string(filePath)
         }
 
+        logger.info("executeCode: proxying to ExecuteSnippet filePath=\(arguments["filePath"]?.stringValue ?? "nil")")
         do {
             return try await bridgeClient.callTool(name: "ExecuteSnippet", arguments: args)
         } catch {
+            logger.error("executeCode: bridge call failed: \(error)")
             return .error("Failed to execute code: \(error)")
         }
     }

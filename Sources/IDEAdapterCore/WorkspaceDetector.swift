@@ -1,4 +1,7 @@
 import Foundation
+import Logging
+
+private let logger = Logger(label: "workspace")
 
 public struct WorkspaceInfo {
     public let name: String
@@ -25,15 +28,19 @@ public enum WorkspaceDetector {
             try process.run()
             process.waitUntilExit()
         } catch {
+            logger.error("workspace detect: failed to run osascript: \(error)")
             return []
         }
 
-        guard process.terminationStatus == 0 else { return [] }
+        guard process.terminationStatus == 0 else {
+            logger.debug("workspace detect: osascript exited with \(process.terminationStatus)")
+            return []
+        }
 
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else { return [] }
 
-        return output.components(separatedBy: ", ").compactMap { path in
+        let results = output.components(separatedBy: ", ").compactMap { path -> WorkspaceInfo? in
             let trimmed = path.trimmingCharacters(in: .whitespaces)
             guard !trimmed.isEmpty else { return nil }
             let url = URL(fileURLWithPath: trimmed)
@@ -41,5 +48,7 @@ public enum WorkspaceDetector {
             let folder = url.deletingLastPathComponent().path
             return WorkspaceInfo(name: name, path: folder)
         }
+        logger.debug("workspace detect: found \(results.count) workspaces: \(results.map(\.name).joined(separator: ", "))")
+        return results
     }
 }

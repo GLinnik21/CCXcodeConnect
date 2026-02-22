@@ -118,6 +118,7 @@ public final class AdapterServer: @unchecked Sendable {
         if let first = workspaces.first {
             state.workspaceName = first.name
         }
+        logger.info("detected \(workspaces.count) workspace(s): \(workspaces.map(\.name).joined(separator: ", "))")
         lockFileManager?.write(workspaceFolders: lastWorkspacePaths)
         onStateChange?(state)
         context.start()
@@ -158,6 +159,7 @@ public final class AdapterServer: @unchecked Sendable {
             let workspaces = WorkspaceDetector.detect()
             let paths = workspaces.map(\.path)
             guard paths != self.lastWorkspacePaths else { return }
+            logger.info("workspace change detected: \(workspaces.map(\.name).joined(separator: ", "))")
             self.lastWorkspacePaths = paths
             self.state.workspaceName = workspaces.first?.name
             self.lockFileManager?.write(workspaceFolders: paths)
@@ -165,6 +167,7 @@ public final class AdapterServer: @unchecked Sendable {
             if let client = self.bridgeClient {
                 Task {
                     let tabId = try? await Self.detectTabIdentifier(bridgeClient: client)
+                    logger.info("workspace poll: updated tabIdentifier=\(tabId ?? "nil")")
                     self.toolRouter?.tabIdentifier = tabId
                 }
             }
