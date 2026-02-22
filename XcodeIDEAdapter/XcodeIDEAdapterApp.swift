@@ -34,6 +34,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 final class AppCoordinator: ObservableObject {
     @Published var xcodeRunning = false
     @Published var claudeConnected = false
+    @Published var connectedPID: Int32?
     @Published var workspaceName: String?
 
     var statusIcon: String {
@@ -54,6 +55,7 @@ final class AppCoordinator: ObservableObject {
                 guard let self else { return }
                 self.xcodeRunning = state.xcodeRunning
                 self.claudeConnected = state.claudeConnected
+                self.connectedPID = state.connectedPID
                 self.workspaceName = state.workspaceName
             }
         }

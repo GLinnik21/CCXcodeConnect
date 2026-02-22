@@ -1,9 +1,12 @@
 import Foundation
+import Logging
 import NIOCore
 import NIOPosix
 import NIOHTTP1
 import NIOWebSocket
 import NIOFoundationCompat
+
+private let logger = Logger(label: "ws")
 
 public final class WebSocketServer: @unchecked Sendable {
     private let authToken: String
@@ -22,10 +25,16 @@ public final class WebSocketServer: @unchecked Sendable {
 
     public func start() async throws -> Int {
         let upgrader = NIOWebSocketServerUpgrader(
-            shouldUpgrade: { [authToken] (channel, head) in
+            shouldUpgrade: { [authToken, weak self] (channel, head) in
+                let remote = channel.remoteAddress?.description ?? "?"
                 let authHeader = head.headers["X-Claude-Code-Ide-Authorization"].first
                 guard authHeader == authToken else {
+                    logger.warning("upgrade rejected: bad auth from \(remote)")
                     return channel.eventLoop.makeFailedFuture(WebSocketError.authFailed)
+                }
+                if self?.clientChannel != nil {
+                    logger.warning("upgrade rejected: already connected, from \(remote)")
+                    return channel.eventLoop.makeFailedFuture(WebSocketError.alreadyConnected)
                 }
                 var headers = HTTPHeaders()
                 if let proto = head.headers["Sec-WebSocket-Protocol"].first {
@@ -62,7 +71,7 @@ public final class WebSocketServer: @unchecked Sendable {
             do {
                 let ch = try await bootstrap.bind(host: "127.0.0.1", port: port).get()
                 self.channel = ch
-                print("WebSocket server listening on 127.0.0.1:\(port)")
+                logger.info("listening on 127.0.0.1:\(port)")
                 return port
             } catch {
                 lastError = error
@@ -94,11 +103,14 @@ public final class WebSocketServer: @unchecked Sendable {
     }
 
     fileprivate func handleConnected(_ channel: Channel) {
+        logger.info("client connected: \(channel.remoteAddress?.description ?? "?")")
         self.clientChannel = channel
         onClientConnected?()
     }
 
-    fileprivate func handleDisconnected() {
+    fileprivate func handleDisconnected(_ channel: Channel) {
+        guard self.clientChannel === channel else { return }
+        logger.info("client disconnected")
         self.clientChannel = nil
         onClientDisconnected?()
     }
@@ -107,11 +119,27 @@ public final class WebSocketServer: @unchecked Sendable {
         guard let data = text.data(using: .utf8) else { return }
 
         let decoder = JSONDecoder()
-        guard let request = try? decoder.decode(JSONRPCRequest.self, from: data) else { return }
+        guard let request = try? decoder.decode(JSONRPCRequest.self, from: data) else {
+            logger.warning("failed to decode request")
+            return
+        }
+
+        let idStr = request.id.map { "\($0)" } ?? "nil"
+        if request.method == "tools/call",
+           let name = request.params?["name"]?.stringValue {
+            logger.info("req tools/call \(name) id=\(idStr)")
+        } else {
+            logger.info("req \(request.method) id=\(idStr)")
+        }
 
         Task {
             let response = await handleRequest(request)
             if let resp = response {
+                if let err = resp.error {
+                    logger.warning("res error id=\(idStr): \(err.message)")
+                } else {
+                    logger.info("res ok id=\(idStr)")
+                }
                 self.sendResponse(resp)
             }
         }
@@ -163,7 +191,8 @@ public final class WebSocketServer: @unchecked Sendable {
             return JSONRPCResponse(id: request.id, result: .object([:]))
 
         default:
-            if request.method.starts(with: "notifications/") {
+            if request.id == nil || request.method.starts(with: "notifications/") {
+                logger.debug("ignoring notification: \(request.method)")
                 return nil
             }
             return JSONRPCResponse(id: request.id, error: .methodNotFound)
@@ -187,27 +216,36 @@ private final class WebSocketHandler: ChannelInboundHandler, @unchecked Sendable
 
     private weak var server: WebSocketServer?
     private var textBuffer = ""
+    private var didNotifyConnect = false
+    private var didNotifyDisconnect = false
 
     init(server: WebSocketServer) {
         self.server = server
     }
 
     func handlerAdded(context: ChannelHandlerContext) {
-        if context.channel.isActive {
+        if context.channel.isActive, !didNotifyConnect {
+            didNotifyConnect = true
             server?.handleConnected(context.channel)
         }
     }
 
     func channelActive(context: ChannelHandlerContext) {
+        guard !didNotifyConnect else { return }
+        didNotifyConnect = true
         server?.handleConnected(context.channel)
     }
 
     func channelInactive(context: ChannelHandlerContext) {
-        server?.handleDisconnected()
+        guard !didNotifyDisconnect else { return }
+        didNotifyDisconnect = true
+        server?.handleDisconnected(context.channel)
     }
 
     func handlerRemoved(context: ChannelHandlerContext) {
-        server?.handleDisconnected()
+        guard !didNotifyDisconnect else { return }
+        didNotifyDisconnect = true
+        server?.handleDisconnected(context.channel)
     }
 
     func channelRead(context: ChannelHandlerContext, data: NIOAny) {
@@ -277,4 +315,5 @@ private final class HTTPByteBufferRequestDecoder: ChannelInboundHandler, Removab
 public enum WebSocketError: Error {
     case authFailed
     case bindFailed
+    case alreadyConnected
 }

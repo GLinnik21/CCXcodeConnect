@@ -1,21 +1,27 @@
 import Foundation
+import Logging
 
 public struct AdapterServerState {
     public var xcodeRunning: Bool
     public var claudeConnected: Bool
+    public var connectedPID: Int32?
     public var workspaceName: String?
 
-    public init(xcodeRunning: Bool = false, claudeConnected: Bool = false, workspaceName: String? = nil) {
+    public init(xcodeRunning: Bool = false, claudeConnected: Bool = false, connectedPID: Int32? = nil, workspaceName: String? = nil) {
         self.xcodeRunning = xcodeRunning
         self.claudeConnected = claudeConnected
+        self.connectedPID = connectedPID
         self.workspaceName = workspaceName
     }
 }
 
-public final class AdapterServer {
+private let logger = Logger(label: "adapter")
+
+public final class AdapterServer: @unchecked Sendable {
     public var onStateChange: ((AdapterServerState) -> Void)?
 
     private var state = AdapterServerState()
+    private var serverPort: Int?
     private var lockFileManager: LockFileManager?
     private var webSocketServer: WebSocketServer?
     private var bridgeClient: MCPBridgeClient?
@@ -40,14 +46,22 @@ public final class AdapterServer {
             guard let self else { return }
             self.state.claudeConnected = true
             self.onStateChange?(self.state)
+            DispatchQueue.global(qos: .utility).async { [weak self] in
+                guard let self else { return }
+                let pid = self.lookupClientPID()
+                self.state.connectedPID = pid
+                self.onStateChange?(self.state)
+            }
         }
         server.onClientDisconnected = { [weak self] in
             guard let self else { return }
             self.state.claudeConnected = false
+            self.state.connectedPID = nil
             self.onStateChange?(self.state)
         }
 
         let port = try await server.start()
+        self.serverPort = port
         self.webSocketServer = server
 
         let lockFile = LockFileManager(port: port, authToken: authToken)
@@ -71,6 +85,7 @@ public final class AdapterServer {
     }
 
     private func handleXcodeStateChange(running: Bool) {
+        logger.info("Xcode \(running ? "launched" : "quit")")
         state.xcodeRunning = running
         onStateChange?(state)
 
@@ -83,6 +98,7 @@ public final class AdapterServer {
 
     private func startBridge() {
         guard bridgeClient == nil else { return }
+        logger.info("starting mcpbridge")
 
         let client = MCPBridgeClient()
         self.bridgeClient = client
@@ -95,6 +111,7 @@ public final class AdapterServer {
             self?.webSocketServer?.sendNotification(notification)
         }
         self.editorContext = context
+        router.editorContext = context
 
         let workspaces = WorkspaceDetector.detect()
         lastWorkspacePaths = workspaces.map(\.path)
@@ -111,13 +128,15 @@ public final class AdapterServer {
                 try await client.start()
                 let tabId = try await Self.detectTabIdentifier(bridgeClient: client)
                 router.tabIdentifier = tabId
+                logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
             } catch {
-                print("Failed to start bridge: \(error)")
+                logger.error("failed to start bridge: \(error)")
             }
         }
     }
 
     private func stopBridge() {
+        logger.info("stopping mcpbridge")
         stopWorkspacePolling()
         editorContext?.stop()
         editorContext = nil
@@ -157,6 +176,29 @@ public final class AdapterServer {
     private func stopWorkspacePolling() {
         workspacePoller?.cancel()
         workspacePoller = nil
+    }
+
+    private func lookupClientPID() -> Int32? {
+        guard let port = serverPort else { return nil }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
+        process.arguments = ["-i", "tcp:\(port)", "-sTCP:ESTABLISHED", "-Fp"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch { return nil }
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        guard let output = String(data: data, encoding: .utf8) else { return nil }
+        let myPid = ProcessInfo.processInfo.processIdentifier
+        for line in output.components(separatedBy: .newlines) {
+            if line.hasPrefix("p"), let pid = Int32(line.dropFirst()), pid != myPid {
+                return pid
+            }
+        }
+        return nil
     }
 
     private static func detectTabIdentifier(bridgeClient: MCPBridgeClient) async throws -> String? {

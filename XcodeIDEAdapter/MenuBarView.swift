@@ -12,6 +12,12 @@ struct MenuBarView: View {
                 Text(statusText)
             }
 
+            if let pid = coordinator.connectedPID {
+                Text("Client PID: \(pid)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             if let workspace = coordinator.workspaceName {
                 Text("Workspace: \(workspace)")
                     .font(.caption)
