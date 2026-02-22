@@ -4,7 +4,7 @@ import Logging
 private let logger = Logger(label: "tools")
 
 public final class MCPToolRouter: @unchecked Sendable {
-    private let bridgeClient: MCPBridgeClient
+    private let bridgeClient: any ToolCallable
     public var tabIdentifier: String?
     public var editorContext: EditorContext?
 
@@ -132,7 +132,7 @@ public final class MCPToolRouter: @unchecked Sendable {
         ),
     ]
 
-    public init(bridgeClient: MCPBridgeClient) {
+    public init(bridgeClient: any ToolCallable) {
         self.bridgeClient = bridgeClient
     }
 

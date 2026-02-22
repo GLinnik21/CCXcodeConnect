@@ -8,24 +8,19 @@ enum GetSelectionTool {
         logger.info("getCurrentSelection called")
 
         guard let snapshot = editorContext?.currentSelection() else {
-            let emptyJson: JSONValue = .object([
-                "text": .string(""),
-                "filePath": .string(""),
-                "fileUrl": .string(""),
-                "selection": .object([
-                    "start": .object(["line": .int(0), "character": .int(0)]),
-                    "end": .object(["line": .int(0), "character": .int(0)]),
-                    "isEmpty": .bool(true)
-                ])
+            let failJson: JSONValue = .object([
+                "success": .bool(false),
+                "message": .string("No active editor found")
             ])
             let encoder = JSONEncoder()
-            if let data = try? encoder.encode(emptyJson), let str = String(data: data, encoding: .utf8) {
+            if let data = try? encoder.encode(failJson), let str = String(data: data, encoding: .utf8) {
                 return .text(str)
             }
             return .text("{}")
         }
 
         let result: JSONValue = .object([
+            "success": .bool(true),
             "text": .string(snapshot.text),
             "filePath": .string(snapshot.filePath),
             "fileUrl": .string(snapshot.fileUrl),

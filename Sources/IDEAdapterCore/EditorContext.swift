@@ -62,8 +62,8 @@ public final class EditorContext: @unchecked Sendable {
         lastSelectionStart = rangeStart
         lastSelectionEnd = rangeEnd
 
-        let (startLine, startChar) = offsetToLineChar(in: fileContents, offset: rangeStart)
-        let (endLine, endChar) = offsetToLineChar(in: fileContents, offset: rangeEnd)
+        let (startLine, startChar) = TextOffsetConverter.offsetToLineChar(in: fileContents, offset: rangeStart)
+        let (endLine, endChar) = TextOffsetConverter.offsetToLineChar(in: fileContents, offset: rangeEnd)
         let isEmpty = rangeStart == rangeEnd
 
         let selectedText: String
@@ -195,24 +195,4 @@ public final class EditorContext: @unchecked Sendable {
         return (parts[0], start, end)
     }
 
-    private func offsetToLineChar(in text: String, offset: Int) -> (Int, Int) {
-        guard offset > 0 else { return (0, 0) }
-
-        var line = 0
-        var charInLine = 0
-        var currentOffset = 1
-
-        for char in text {
-            if currentOffset >= offset { break }
-            if char == "\n" {
-                line += 1
-                charInLine = 0
-            } else {
-                charInLine += 1
-            }
-            currentOffset += 1
-        }
-
-        return (line, charInLine)
-    }
 }

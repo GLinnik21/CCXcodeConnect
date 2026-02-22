@@ -50,12 +50,22 @@ enum SaveDocumentTool {
         }
 
         if output == "NOT_FOUND" {
+            let failResult: JSONValue = .object([
+                "success": .bool(false),
+                "message": .string("Document not open: \(filePath)")
+            ])
+            let encoder = JSONEncoder()
+            if let data = try? encoder.encode(failResult), let str = String(data: data, encoding: .utf8) {
+                return .text(str)
+            }
             return .error("Document not found in Xcode: \(filePath)")
         }
 
         let result: JSONValue = .object([
+            "success": .bool(true),
             "filePath": .string(filePath),
-            "saved": .bool(true)
+            "saved": .bool(true),
+            "message": .string("Document saved successfully")
         ])
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {

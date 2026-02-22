@@ -1,6 +1,6 @@
 import Foundation
 
-public final class MCPBridgeClient: @unchecked Sendable {
+public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     private var process: Process?
     private var stdinPipe: Pipe?
     private var stdoutPipe: Pipe?

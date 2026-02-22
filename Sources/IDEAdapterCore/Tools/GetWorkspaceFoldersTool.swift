@@ -20,8 +20,15 @@ enum GetWorkspaceFoldersTool {
 
         logger.info("getWorkspaceFolders returning \(folders.count) folders")
 
+        let rootPath = workspaces.first?.path ?? ""
+        let result: JSONValue = .object([
+            "success": .bool(true),
+            "folders": .array(folders),
+            "rootPath": .string(rootPath)
+        ])
+
         let encoder = JSONEncoder()
-        if let data = try? encoder.encode(JSONValue.array(folders)), let str = String(data: data, encoding: .utf8) {
+        if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {
             return .text(str)
         }
         return .error("Failed to encode workspace folders")

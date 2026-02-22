@@ -1,7 +1,7 @@
 import Foundation
 
 enum GetDiagnosticsTool {
-    static func execute(arguments: [String: JSONValue], bridgeClient: MCPBridgeClient, tabIdentifier: String?) async -> MCPToolResult {
+    static func execute(arguments: [String: JSONValue], bridgeClient: any ToolCallable, tabIdentifier: String?) async -> MCPToolResult {
         guard let tabId = tabIdentifier else {
             return .error("No Xcode workspace connected")
         }

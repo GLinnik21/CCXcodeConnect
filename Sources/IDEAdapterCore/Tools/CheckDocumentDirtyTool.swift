@@ -50,9 +50,8 @@ enum CheckDocumentDirtyTool {
 
         if output == "NOT_FOUND" {
             let result: JSONValue = .object([
-                "filePath": .string(filePath),
-                "found": .bool(false),
-                "isDirty": .bool(false)
+                "success": .bool(false),
+                "message": .string("Document not open: \(filePath)")
             ])
             let encoder = JSONEncoder()
             if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {
@@ -63,9 +62,10 @@ enum CheckDocumentDirtyTool {
 
         let isDirty = output.lowercased() == "true"
         let result: JSONValue = .object([
+            "success": .bool(true),
             "filePath": .string(filePath),
-            "found": .bool(true),
-            "isDirty": .bool(isDirty)
+            "isDirty": .bool(isDirty),
+            "isUntitled": .bool(false)
         ])
         let encoder = JSONEncoder()
         if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {

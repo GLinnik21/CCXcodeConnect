@@ -32,5 +32,9 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
             ]
         ),
+        .testTarget(
+            name: "IDEAdapterCoreTests",
+            dependencies: ["IDEAdapterCore"]
+        ),
     ]
 )
