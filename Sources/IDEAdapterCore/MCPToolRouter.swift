@@ -1,8 +1,12 @@
 import Foundation
+import Logging
+
+private let logger = Logger(label: "tools")
 
 public final class MCPToolRouter: @unchecked Sendable {
     private let bridgeClient: MCPBridgeClient
     public var tabIdentifier: String?
+    public var editorContext: EditorContext?
 
     private let ideTools: [MCPToolDefinition] = [
         MCPToolDefinition(
@@ -72,6 +76,60 @@ public final class MCPToolRouter: @unchecked Sendable {
                 "required": .array([.string("code"), .string("filePath")])
             ])
         ),
+        MCPToolDefinition(
+            name: "getCurrentSelection",
+            description: "Get the current text selection in Xcode, including file path and selection range",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([:])
+            ])
+        ),
+        MCPToolDefinition(
+            name: "getLatestSelection",
+            description: "Get the latest text selection in Xcode, including file path and selection range",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([:])
+            ])
+        ),
+        MCPToolDefinition(
+            name: "getOpenEditors",
+            description: "Get all open source documents in Xcode with their paths, labels, and dirty state",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([:])
+            ])
+        ),
+        MCPToolDefinition(
+            name: "getWorkspaceFolders",
+            description: "Get all workspace folders currently open in Xcode",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([:])
+            ])
+        ),
+        MCPToolDefinition(
+            name: "checkDocumentDirty",
+            description: "Check if a document has unsaved changes in Xcode",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([
+                    "filePath": .object(["type": .string("string"), "description": .string("Absolute path to the file to check")])
+                ]),
+                "required": .array([.string("filePath")])
+            ])
+        ),
+        MCPToolDefinition(
+            name: "saveDocument",
+            description: "Save a specific document in Xcode",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([
+                    "filePath": .object(["type": .string("string"), "description": .string("Absolute path to the file to save")])
+                ]),
+                "required": .array([.string("filePath")])
+            ])
+        ),
     ]
 
     public init(bridgeClient: MCPBridgeClient) {
@@ -85,17 +143,38 @@ public final class MCPToolRouter: @unchecked Sendable {
     public func callTool(name: String, arguments: [String: JSONValue]) async -> MCPToolResult {
         switch name {
         case "openDiff":
+            logger.info("IDE tool call: openDiff")
             return await OpenDiffTool.execute(arguments: arguments)
         case "closeDiff":
+            logger.info("IDE tool call: closeDiff")
             return await CloseDiffTool.execute(arguments: arguments)
         case "closeAllDiffTabs":
+            logger.info("IDE tool call: closeAllDiffTabs")
             return await CloseDiffTool.closeAll()
         case "openFile":
+            logger.info("IDE tool call: openFile path=\(arguments["filePath"]?.stringValue ?? "nil")")
             return await OpenFileTool.execute(arguments: arguments)
         case "getDiagnostics":
+            logger.info("IDE tool call: getDiagnostics")
             return await GetDiagnosticsTool.execute(arguments: arguments, bridgeClient: bridgeClient, tabIdentifier: tabIdentifier)
         case "executeCode":
+            logger.info("IDE tool call: executeCode")
             return await executeCode(arguments: arguments)
+        case "getCurrentSelection", "getLatestSelection":
+            logger.info("IDE tool call: \(name)")
+            return GetSelectionTool.execute(editorContext: editorContext)
+        case "getOpenEditors":
+            logger.info("IDE tool call: getOpenEditors")
+            return await GetOpenEditorsTool.execute()
+        case "getWorkspaceFolders":
+            logger.info("IDE tool call: getWorkspaceFolders")
+            return GetWorkspaceFoldersTool.execute()
+        case "checkDocumentDirty":
+            logger.info("IDE tool call: checkDocumentDirty path=\(arguments["filePath"]?.stringValue ?? "nil")")
+            return await CheckDocumentDirtyTool.execute(arguments: arguments)
+        case "saveDocument":
+            logger.info("IDE tool call: saveDocument path=\(arguments["filePath"]?.stringValue ?? "nil")")
+            return await SaveDocumentTool.execute(arguments: arguments)
         default:
             return .error("Unknown tool: \(name)")
         }
