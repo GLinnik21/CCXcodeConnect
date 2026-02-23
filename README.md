@@ -6,17 +6,7 @@ It bridges Claude Code's WebSocket MCP protocol to Xcode's `xcrun mcpbridge` STD
 
 ## What It Does
 
-When running, Claude Code can:
-
-- **Read and navigate** Xcode project structure (files, directories, search)
-- **Edit files** directly in the Xcode project
-- **Build the project** and retrieve build logs and errors
-- **Get diagnostics** (errors, warnings) from the Issue Navigator
-- **Run tests** (all or specific) from the active test plan
-- **Open files** in Xcode at specific line numbers
-- **Execute Swift snippets** in the context of project source files
-- **Render SwiftUI previews** and return snapshots
-- **Track editor context** (active file, cursor position, selection) in real time
+Provides the `/ide` integration for Xcode — Claude Code can see which file you're editing, your cursor position, and what text you've selected. Without it, Claude Code is blind to what's happening in Xcode.
 
 ## Requirements
 
