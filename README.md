@@ -8,6 +8,11 @@ It bridges Claude Code's WebSocket MCP protocol to Xcode's `xcrun mcpbridge` STD
 
 Provides the `/ide` integration for Xcode — Claude Code can see which file you're editing, your cursor position, and what text you've selected. Without it, Claude Code is blind to what's happening in Xcode.
 
+<img src="assets/ide-select.png" width="400" alt="Select Xcode workspace in /ide">
+<img src="assets/ide-in-readme.png" width="400" alt="Claude Code sees your active file">
+<img src="assets/ide-11-lines.png" width="400" alt="Claude Code sees selected lines">
+<img src="assets/ide-diagnostics.jpeg" width="400" alt="Claude Code found diagnostic issues">
+
 ## Requirements
 
 - macOS 14+
