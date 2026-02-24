@@ -17,7 +17,7 @@ public struct SelectionSnapshot: Sendable {
 public final class EditorContext: @unchecked Sendable {
     private var timer: DispatchSourceTimer?
     private let sendNotification: (JSONRPCNotification) -> Void
-    private let workspaceFilter: String?
+    private let workspaceName: String?
     private var lastFilePath: String?
     private var lastSelectionStart: Int?
     private var lastSelectionEnd: Int?
@@ -28,8 +28,8 @@ public final class EditorContext: @unchecked Sendable {
         snapshotLock.withLock { _lastSnapshot }
     }
 
-    public init(workspaceFilter: String? = nil, sendNotification: @escaping (JSONRPCNotification) -> Void) {
-        self.workspaceFilter = workspaceFilter
+    public init(workspaceName: String? = nil, sendNotification: @escaping (JSONRPCNotification) -> Void) {
+        self.workspaceName = workspaceName
         self.sendNotification = sendNotification
     }
 
@@ -51,9 +51,9 @@ public final class EditorContext: @unchecked Sendable {
     }
 
     private func poll() {
-        guard let (filePath, rangeStart, rangeEnd) = queryXcode() else { return }
+        guard let (filePath, rangeStart, rangeEnd, windowWorkspace) = queryXcode() else { return }
 
-        if let filter = workspaceFilter, !filePath.hasPrefix(filter) {
+        if let workspaceName, windowWorkspace != workspaceName {
             return
         }
 
@@ -122,7 +122,7 @@ public final class EditorContext: @unchecked Sendable {
         sendNotification(notification)
     }
 
-    private func queryXcode() -> (String, Int, Int)? {
+    private func queryXcode() -> (String, Int, Int, String)? {
         let script = """
         tell application "Xcode"
 
@@ -132,7 +132,7 @@ public final class EditorContext: @unchecked Sendable {
 
             set winName to name of front window
 
-            -- Extract filename from window title
+            -- Extract workspace name and filename from window title
             set AppleScript's text item delimiters to " — "
             set parts to text items of winName
 
@@ -140,6 +140,7 @@ public final class EditorContext: @unchecked Sendable {
                 return "NO_FILE"
             end if
 
+            set wsName to item 1 of parts
             set filePart to item 2 of parts
             set AppleScript's text item delimiters to ", "
             set fileName to item 1 of (text items of filePart)
@@ -170,7 +171,7 @@ public final class EditorContext: @unchecked Sendable {
                 end if
             end try
 
-            return docPath & "||" & rangeStart & "||" & rangeEnd
+            return docPath & "||" & rangeStart & "||" & rangeEnd & "||" & wsName
 
         end tell
         """
@@ -208,14 +209,14 @@ public final class EditorContext: @unchecked Sendable {
         }
 
         let parts = output.components(separatedBy: "||")
-        guard parts.count == 3,
+        guard parts.count == 4,
               let start = Int(parts[1]),
               let end = Int(parts[2]) else {
             logger.warning("queryXcode: unexpected output format: \(output.prefix(100))")
             return nil
         }
 
-        return (parts[0], start, end)
+        return (parts[0], start, end, parts[3])
     }
 
 }

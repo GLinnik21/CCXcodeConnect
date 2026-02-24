@@ -135,7 +135,8 @@ public final class AdapterServer: @unchecked Sendable {
         self.toolRouter = router
         webSocketServer?.toolRouter = router
 
-        let context = EditorContext(workspaceFilter: targetWorkspace) { [weak self] notification in
+        let wsName = targetWorkspace.map { URL(fileURLWithPath: $0).lastPathComponent }
+        let context = EditorContext(workspaceName: wsName) { [weak self] notification in
             self?.webSocketServer?.sendNotification(notification)
         }
         self.editorContext = context
