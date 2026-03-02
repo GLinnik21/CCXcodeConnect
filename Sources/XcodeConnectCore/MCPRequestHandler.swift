@@ -17,7 +17,7 @@ public struct MCPRequestHandler: @unchecked Sendable {
             let result = MCPInitializeResult(
                 protocolVersion: "2024-11-05",
                 capabilities: MCPCapabilities(tools: MCPToolsCapability(listChanged: true)),
-                serverInfo: MCPServerInfo(name: "cc-xcode-connect", version: "0.0.1")
+                serverInfo: MCPServerInfo(name: "ide", version: "0.0.1")
             )
             guard let encoded = try? JSONEncoder().encode(result),
                   let jsonValue = try? JSONDecoder().decode(JSONValue.self, from: encoded) else {

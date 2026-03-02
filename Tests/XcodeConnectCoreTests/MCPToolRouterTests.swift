@@ -152,4 +152,91 @@ final class MCPToolRouterTests: XCTestCase {
         XCTAssertEqual(OpenFileTool.findLine(containing: "print", in: tmpFile), 3)
         XCTAssertNil(OpenFileTool.findLine(containing: "nonexistent", in: tmpFile))
     }
+
+    // MARK: - getDiagnostics LSP format transformation
+
+    func testTransformToLSPFormatGroupsByFile() {
+        let raw: JSONValue = .object([
+            "issues": .array([
+                .object([
+                    "path": .string("/Users/test/File.swift"),
+                    "message": .string("Type error"),
+                    "line": .int(10),
+                    "severity": .string("error")
+                ]),
+                .object([
+                    "path": .string("/Users/test/File.swift"),
+                    "message": .string("Unused var"),
+                    "line": .int(20),
+                    "severity": .string("warning")
+                ])
+            ])
+        ])
+        let result = GetDiagnosticsTool.transformToLSPFormat(raw, filterUri: nil)
+        guard let arr = result.arrayValue else {
+            return XCTFail("Expected array")
+        }
+        XCTAssertEqual(arr.count, 1)
+        let entry = arr[0]
+        XCTAssertEqual(entry["uri"]?.stringValue, "file:///Users/test/File.swift")
+        let diagnostics = entry["diagnostics"]?.arrayValue
+        XCTAssertEqual(diagnostics?.count, 2)
+    }
+
+    func testTransformToLSPFormatConvertsLineToZeroBased() {
+        let raw: JSONValue = .object([
+            "issues": .array([
+                .object([
+                    "path": .string("/test.swift"),
+                    "message": .string("Error"),
+                    "line": .int(5),
+                    "severity": .string("error")
+                ])
+            ])
+        ])
+        let result = GetDiagnosticsTool.transformToLSPFormat(raw, filterUri: nil)
+        let diag = result.arrayValue?[0]["diagnostics"]?.arrayValue?[0]
+        let line = diag?["range"]?["start"]?["line"]?.intValue
+        XCTAssertEqual(line, 4)
+    }
+
+    func testTransformToLSPFormatMapsSeverity() {
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("error"), 1)
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("warning"), 2)
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("remark"), 3)
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity(nil), 1)
+    }
+
+    func testTransformToLSPFormatEmptyIssues() {
+        let raw: JSONValue = .object(["issues": .array([])])
+        let result = GetDiagnosticsTool.transformToLSPFormat(raw, filterUri: nil)
+        XCTAssertEqual(result.arrayValue?.count, 0)
+    }
+
+    func testTransformToLSPFormatNoIssuesKey() {
+        let raw: JSONValue = .object([:])
+        let result = GetDiagnosticsTool.transformToLSPFormat(raw, filterUri: nil)
+        XCTAssertEqual(result.arrayValue?.count, 0)
+    }
+
+    func testTransformToLSPFormatMultipleFiles() {
+        let raw: JSONValue = .object([
+            "issues": .array([
+                .object([
+                    "path": .string("/A.swift"),
+                    "message": .string("Error A"),
+                    "line": .int(1),
+                    "severity": .string("error")
+                ]),
+                .object([
+                    "path": .string("/B.swift"),
+                    "message": .string("Error B"),
+                    "line": .int(2),
+                    "severity": .string("warning")
+                ])
+            ])
+        ])
+        let result = GetDiagnosticsTool.transformToLSPFormat(raw, filterUri: nil)
+        XCTAssertEqual(result.arrayValue?.count, 2)
+    }
 }

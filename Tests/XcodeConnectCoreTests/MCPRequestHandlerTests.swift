@@ -12,7 +12,7 @@ final class MCPRequestHandlerTests: XCTestCase {
 
         let result = try XCTUnwrap(response.result)
         XCTAssertEqual(result["protocolVersion"]?.stringValue, "2024-11-05")
-        XCTAssertEqual(result["serverInfo"]?["name"]?.stringValue, "cc-xcode-connect")
+        XCTAssertEqual(result["serverInfo"]?["name"]?.stringValue, "ide")
     }
 
     func testNotificationsInitializedReturnsNil() async {

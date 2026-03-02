@@ -128,7 +128,7 @@ public final class AdapterSupervisor: @unchecked Sendable {
 
     private func createWorkerLocked(workspace: WorkspaceInfo) {
         logger.info("creating worker for \(workspace.name) at \(workspace.path)")
-        let server = AdapterServer(targetWorkspace: workspace.path, sharedBridgeClient: bridgeClient)
+        let server = AdapterServer(targetWorkspace: workspace.path, windowName: workspace.windowName, sharedBridgeClient: bridgeClient)
         let path = workspace.path
         server.onStateChange = { [weak self] state in
             guard let self else { return }

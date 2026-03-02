@@ -36,9 +36,11 @@ public final class AdapterServer: @unchecked Sendable {
     private var workspacePoller: DispatchSourceTimer?
     private var lastWorkspacePaths: [String] = []
     private let targetWorkspace: String?
+    private let windowName: String?
 
-    public init(targetWorkspace: String? = nil, sharedBridgeClient: (any ToolCallable)? = nil) {
+    public init(targetWorkspace: String? = nil, windowName: String? = nil, sharedBridgeClient: (any ToolCallable)? = nil) {
         self.targetWorkspace = targetWorkspace
+        self.windowName = windowName
         self.sharedBridgeClient = sharedBridgeClient
     }
 
@@ -135,7 +137,7 @@ public final class AdapterServer: @unchecked Sendable {
         self.toolRouter = router
         webSocketServer?.toolRouter = router
 
-        let wsName = targetWorkspace.map { URL(fileURLWithPath: $0).lastPathComponent }
+        let wsName = windowName ?? targetWorkspace.map { URL(fileURLWithPath: $0).lastPathComponent }
         let context = EditorContext(workspaceName: wsName) { [weak self] notification in
             self?.webSocketServer?.sendNotification(notification)
         }
