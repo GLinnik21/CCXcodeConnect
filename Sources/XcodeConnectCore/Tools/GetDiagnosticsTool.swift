@@ -17,7 +17,7 @@ enum GetDiagnosticsTool {
             logger.debug("getDiagnostics: severity=\(severity)")
         }
 
-        if let filePath = arguments["filePath"]?.stringValue {
+        if let filePath = Self.resolveFilePath(from: arguments) {
             args["glob"] = .string("**/\(filePath)")
             logger.debug("getDiagnostics: filtering by file=\(filePath)")
         }
@@ -31,5 +31,18 @@ enum GetDiagnosticsTool {
             logger.error("getDiagnostics: bridge call failed: \(error)")
             return .error("Failed to get diagnostics: \(error)")
         }
+    }
+
+    static func resolveFilePath(from arguments: [String: JSONValue]) -> String? {
+        if let filePath = arguments["filePath"]?.stringValue {
+            return filePath
+        }
+        if let uri = arguments["uri"]?.stringValue {
+            if uri.hasPrefix("file://") {
+                return String(uri.dropFirst("file://".count))
+            }
+            return uri
+        }
+        return nil
     }
 }

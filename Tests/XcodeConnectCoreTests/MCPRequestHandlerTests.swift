@@ -43,7 +43,7 @@ final class MCPRequestHandlerTests: XCTestCase {
         }
 
         let tools = try XCTUnwrap(response.result?["tools"]?.arrayValue)
-        XCTAssertEqual(tools.count, 9)
+        XCTAssertEqual(tools.count, 10)
     }
 
     func testToolsCallMissingParamsReturnsError() async throws {

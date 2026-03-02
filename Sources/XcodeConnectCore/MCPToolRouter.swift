@@ -16,7 +16,12 @@ public final class MCPToolRouter: @unchecked Sendable {
                 "type": .string("object"),
                 "properties": .object([
                     "filePath": .object(["type": .string("string"), "description": .string("Absolute path to the file")]),
-                    "line": .object(["type": .string("integer"), "description": .string("Line number to navigate to")])
+                    "line": .object(["type": .string("integer"), "description": .string("Line number to navigate to")]),
+                    "preview": .object(["type": .string("boolean"), "description": .string("Open as preview without focusing")]),
+                    "startText": .object(["type": .string("string"), "description": .string("Text anchor for start of selection")]),
+                    "endText": .object(["type": .string("string"), "description": .string("Text anchor for end of selection")]),
+                    "selectToEndOfLine": .object(["type": .string("boolean"), "description": .string("Extend selection to end of line")]),
+                    "makeFrontmost": .object(["type": .string("boolean"), "description": .string("Bring Xcode to front")])
                 ]),
                 "required": .array([.string("filePath")])
             ])
@@ -28,6 +33,7 @@ public final class MCPToolRouter: @unchecked Sendable {
                 "type": .string("object"),
                 "properties": .object([
                     "filePath": .object(["type": .string("string"), "description": .string("Optional file path to get diagnostics for")]),
+                    "uri": .object(["type": .string("string"), "description": .string("Optional file URI (file:///path) to get diagnostics for")]),
                     "severity": .object(["type": .string("string"), "description": .string("Minimum severity: error, warning, or remark")])
                 ])
             ])
@@ -98,6 +104,14 @@ public final class MCPToolRouter: @unchecked Sendable {
                 "required": .array([.string("filePath")])
             ])
         ),
+        MCPToolDefinition(
+            name: "closeAllDiffTabs",
+            description: "Close all diff editor tabs in Xcode",
+            inputSchema: .object([
+                "type": .string("object"),
+                "properties": .object([:])
+            ])
+        ),
     ]
 
     public init(bridgeClient: any ToolCallable) {
@@ -134,6 +148,9 @@ public final class MCPToolRouter: @unchecked Sendable {
         case "saveDocument":
             logger.info("IDE tool call: saveDocument path=\(arguments["filePath"]?.stringValue ?? "nil")")
             return await SaveDocumentTool.execute(arguments: arguments)
+        case "closeAllDiffTabs":
+            logger.info("IDE tool call: closeAllDiffTabs")
+            return .text("OK")
         default:
             logger.warning("unknown tool requested: \(name)")
             return .error("Unknown tool: \(name)")

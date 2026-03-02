@@ -10,7 +10,15 @@ enum OpenFileTool {
             return .error("Missing filePath")
         }
 
-        let line = arguments["line"]?.intValue
+        let line: Int?
+        if let explicitLine = arguments["line"]?.intValue {
+            line = explicitLine
+        } else if let startText = arguments["startText"]?.stringValue, !startText.isEmpty {
+            line = Self.findLine(containing: startText, in: filePath)
+        } else {
+            line = nil
+        }
+
         logger.info("openFile: path=\(filePath) line=\(line.map(String.init) ?? "nil")")
 
         let process = Process()
@@ -35,5 +43,17 @@ enum OpenFileTool {
             logger.error("openFile: failed to run xed: \(error)")
             return .error("Failed to open file: \(error)")
         }
+    }
+
+    static func findLine(containing text: String, in filePath: String) -> Int? {
+        guard let contents = try? String(contentsOfFile: filePath, encoding: .utf8) else {
+            return nil
+        }
+        for (index, line) in contents.components(separatedBy: .newlines).enumerated() {
+            if line.contains(text) {
+                return index + 1
+            }
+        }
+        return nil
     }
 }
