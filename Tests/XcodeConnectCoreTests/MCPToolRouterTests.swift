@@ -79,7 +79,7 @@ final class MCPToolRouterTests: XCTestCase {
         ])
         XCTAssertEqual(mock.lastCallName, "XcodeListNavigatorIssues")
         let glob = mock.lastCallArguments?["glob"]?.stringValue
-        XCTAssertTrue(glob?.contains("File.swift") == true)
+        XCTAssertEqual(glob, "**/File.swift")
     }
 
     func testGetDiagnosticsFilePathTakesPrecedenceOverUri() async {

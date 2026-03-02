@@ -18,8 +18,9 @@ enum GetDiagnosticsTool {
 
         let filterPath = Self.resolveFilePath(from: arguments)
         if let filePath = filterPath {
-            args["glob"] = .string("**/\(filePath)")
-            logger.debug("getDiagnostics: filtering by file=\(filePath)")
+            let globName = URL(fileURLWithPath: filePath).lastPathComponent
+            args["glob"] = .string("**/\(globName)")
+            logger.debug("getDiagnostics: filtering by file=\(filePath) glob=**/\(globName)")
         }
 
         logger.info("getDiagnostics: proxying to XcodeListNavigatorIssues tab=\(tabId)")
