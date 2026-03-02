@@ -1,12 +1,6 @@
 # CC Xcode Connect
 
-A macOS menu bar app that connects [Claude Code](https://claude.ai/code) to Xcode via the `/ide` integration.
-
-It bridges Claude Code's WebSocket MCP protocol to Xcode's `xcrun mcpbridge` STDIO MCP server, giving Claude Code full access to Xcode's project tools and editor context.
-
-## What It Does
-
-Provides the `/ide` integration for Xcode — Claude Code can see which file you're editing, your cursor position, and what text you've selected. Without it, Claude Code is blind to what's happening in Xcode.
+A macOS menu bar app that enables the `/ide` integration for [Claude Code](https://claude.ai/code) — so it can see your current file, cursor position, and diagnostics in Xcode.
 
 <img src="assets/ide-select.png" width="400" alt="Select Xcode workspace in /ide">
 <img src="assets/ide-in-readme.png" width="400" alt="Claude Code sees your active file">
@@ -68,7 +62,7 @@ swift run cc-xcode-connect --workspace /path  # single targeted workspace
 2. On each Xcode launch, macOS will ask to allow CC Xcode Connect to connect to Xcode — click **OK** to grant the automation permission
 3. Open one or more projects in Xcode — the adapter appears in the menu bar
 4. In each Claude Code session, run `/ide` to connect to the matching workspace
-5. Claude Code now has access to Xcode tools via the MCP server
+5. Claude Code can now see your active file, cursor position, and diagnostics
 
 Each Xcode window gets its own adapter instance with a dedicated WebSocket port and lock file. Multiple Claude Code clients can connect to the same workspace simultaneously.
 
