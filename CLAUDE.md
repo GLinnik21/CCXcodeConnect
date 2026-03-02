@@ -61,19 +61,21 @@ The CLI also supports `--workspace <path>` for running a single targeted instanc
 
 ## Tool Routing
 
-`MCPToolRouter` exposes 9 IDE-specific tools + all mcpbridge tools:
+`MCPToolRouter` exposes exactly 9 IDE-specific tools (it does NOT expose all mcpbridge tools):
 
 | IDE Tool | Implementation |
 |----------|---------------|
 | `openFile` | `xed --line N path` |
-| `getDiagnostics` | Proxies to `XcodeListNavigatorIssues` with optional glob filter by file |
-| `executeCode` | Proxies to `ExecuteSnippet` via mcpbridge |
+| `getDiagnostics` | Wraps `XcodeListNavigatorIssues` mcpbridge tool with optional glob filter by file |
+| `executeCode` | Wraps `ExecuteSnippet` mcpbridge tool |
 | `getCurrentSelection` / `getLatestSelection` | Returns current editor selection from `EditorContext` |
 | `getOpenEditors` | Lists open editors via AppleScript |
 | `getWorkspaceFolders` | Returns detected workspace paths |
 | `checkDocumentDirty` | Checks unsaved changes via AppleScript |
 | `saveDocument` | Saves a document via AppleScript |
 
-Diff tools (`openDiff`, `closeDiff`, `closeAllDiffTabs`) are intentionally not exposed — Claude Code falls back to its built-in terminal diff view, which gives the user proper accept/reject control.
+Only these 9 tools are exposed to Claude Code clients. Tool calls for any other tool name will fail with "Unknown tool" error.
 
-All other tool calls are proxied to mcpbridge with `tabIdentifier` auto-injected.
+The `getDiagnostics` and `executeCode` tools internally call mcpbridge tools (`XcodeListNavigatorIssues` and `ExecuteSnippet` respectively) with `tabIdentifier` auto-injected, but no other mcpbridge tools are accessible.
+
+Diff tools (`openDiff`, `closeDiff`, `closeAllDiffTabs`) are intentionally not exposed — Claude Code falls back to its built-in terminal diff view, which gives the user proper accept/reject control.
