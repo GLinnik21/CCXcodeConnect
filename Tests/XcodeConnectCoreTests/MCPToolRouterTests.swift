@@ -201,10 +201,10 @@ final class MCPToolRouterTests: XCTestCase {
     }
 
     func testTransformToLSPFormatMapsSeverity() {
-        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("error"), 1)
-        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("warning"), 2)
-        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("remark"), 3)
-        XCTAssertEqual(GetDiagnosticsTool.mapSeverity(nil), 1)
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("error"), "Error")
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("warning"), "Warning")
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity("remark"), "Info")
+        XCTAssertEqual(GetDiagnosticsTool.mapSeverity(nil), "Error")
     }
 
     func testTransformToLSPFormatEmptyIssues() {

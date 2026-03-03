@@ -65,7 +65,7 @@ enum GetDiagnosticsTool {
 
             let diagnostic: JSONValue = .object([
                 "message": .string(message),
-                "severity": .int(severity),
+                "severity": .string(severity),
                 "range": .object([
                     "start": .object(["line": .int(line), "character": .int(0)]),
                     "end": .object(["line": .int(line), "character": .int(0)])
@@ -86,12 +86,12 @@ enum GetDiagnosticsTool {
         return .array(result)
     }
 
-    static func mapSeverity(_ severity: String?) -> Int {
+    static func mapSeverity(_ severity: String?) -> String {
         switch severity {
-        case "error": return 1
-        case "warning": return 2
-        case "remark": return 3
-        default: return 1
+        case "error": return "Error"
+        case "warning": return "Warning"
+        case "remark": return "Info"
+        default: return "Error"
         }
     }
 
