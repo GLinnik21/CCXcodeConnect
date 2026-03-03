@@ -2,7 +2,14 @@ import Foundation
 import XcodeConnectCore
 import Logging
 
-LoggingSystem.bootstrap { StreamLogHandler.standardError(label: $0) }
+LoggingSystem.bootstrap { label in
+    var handler = StreamLogHandler.standardError(label: label)
+    if let levelStr = ProcessInfo.processInfo.environment["LOG_LEVEL"],
+       let level = Logger.Level(rawValue: levelStr.lowercased()) {
+        handler.logLevel = level
+    }
+    return handler
+}
 
 let workspacePath: String? = {
     let args = CommandLine.arguments

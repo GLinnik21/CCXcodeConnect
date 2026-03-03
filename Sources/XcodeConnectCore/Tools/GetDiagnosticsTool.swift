@@ -10,11 +10,10 @@ enum GetDiagnosticsTool {
             return .error("No Xcode workspace connected")
         }
 
-        var args: [String: JSONValue] = ["tabIdentifier": .string(tabId)]
-
-        if let severity = arguments["severity"]?.stringValue {
-            args["severity"] = .string(severity)
-        }
+        var args: [String: JSONValue] = [
+            "tabIdentifier": .string(tabId),
+            "severity": .string(arguments["severity"]?.stringValue ?? "remark")
+        ]
 
         let filterPath = Self.resolveFilePath(from: arguments)
         if let filePath = filterPath {
@@ -27,6 +26,9 @@ enum GetDiagnosticsTool {
         do {
             let result = try await bridgeClient.callTool(name: "XcodeListNavigatorIssues", arguments: args)
             logger.info("getDiagnostics: got \(result.content.count) content items, isError=\(result.isError.map(String.init) ?? "nil")")
+            if let rawText = result.content.first?.text {
+                logger.info("getDiagnostics: raw response=\(rawText)")
+            }
 
             guard let text = result.content.first?.text,
                   let data = text.data(using: .utf8),
