@@ -10,11 +10,12 @@ enum GetWorkspaceFoldersTool {
         let workspaces = WorkspaceDetector.detect()
 
         var folders: [JSONValue] = []
-        for ws in workspaces {
+        for (index, ws) in workspaces.enumerated() {
             folders.append(.object([
                 "name": .string(ws.name),
                 "uri": .string("file://\(ws.path)"),
-                "path": .string(ws.path)
+                "path": .string(ws.path),
+                "index": .int(index)
             ]))
         }
 
@@ -24,7 +25,8 @@ enum GetWorkspaceFoldersTool {
         let result: JSONValue = .object([
             "success": .bool(true),
             "folders": .array(folders),
-            "rootPath": .string(rootPath)
+            "rootPath": .string(rootPath),
+            "workspaceFile": .null
         ])
 
         let encoder = JSONEncoder()

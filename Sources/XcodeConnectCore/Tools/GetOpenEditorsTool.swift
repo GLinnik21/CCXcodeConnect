@@ -73,7 +73,8 @@ enum GetOpenEditorsTool {
         logger.info("getOpenEditors returning \(editors.count) editors")
 
         let encoder = JSONEncoder()
-        if let data = try? encoder.encode(JSONValue.array(editors)), let str = String(data: data, encoding: .utf8) {
+        let result: JSONValue = .object(["tabs": .array(editors)])
+        if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {
             return .text(str)
         }
         return .error("Failed to encode editors")

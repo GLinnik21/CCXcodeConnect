@@ -68,6 +68,18 @@ final class MCPToolRouterTests: XCTestCase {
         XCTAssertTrue(result.content.first?.text?.contains("Unknown tool") == true)
     }
 
+    // MARK: - getOpenEditors
+
+    func testGetOpenEditorsReturnsTabsWrapper() async throws {
+        let (router, _) = makeRouter()
+        let result = await router.callTool(name: "getOpenEditors", arguments: [:])
+        let text = try XCTUnwrap(result.content.first?.text)
+        let data = try XCTUnwrap(text.data(using: .utf8))
+        let json = try JSONDecoder().decode(JSONValue.self, from: data)
+        XCTAssertNotNil(json["tabs"], "getOpenEditors must return {tabs: [...]}")
+        XCTAssertNotNil(json["tabs"]?.arrayValue)
+    }
+
     // MARK: - getDiagnostics uri parameter
 
     func testGetDiagnosticsWithUri() async {
