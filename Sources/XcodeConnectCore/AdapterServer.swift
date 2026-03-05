@@ -34,6 +34,8 @@ public final class AdapterServer: @unchecked Sendable {
     private var editorContext: EditorContext?
     private var xcodeMonitor: XcodeMonitor?
     private var workspacePoller: DispatchSourceTimer?
+    private var diagnosticsPoller: DispatchSourceTimer?
+    private var lastDiagnosticsSnapshot: [String: String] = [:]
     private var lastWorkspacePaths: [String] = []
     private let targetWorkspace: String?
     private let windowName: String?
@@ -100,6 +102,7 @@ public final class AdapterServer: @unchecked Sendable {
 
     public func shutdown() {
         stopWorkspacePolling()
+        stopDiagnosticsPolling()
         xcodeMonitor?.stopMonitoring()
         editorContext?.stop()
         ownedBridgeClient?.stop()
@@ -157,6 +160,7 @@ public final class AdapterServer: @unchecked Sendable {
         }
         onStateChange?(state)
         context.start()
+        startDiagnosticsPolling()
 
         if targetWorkspace == nil {
             startWorkspacePolling()
@@ -190,6 +194,7 @@ public final class AdapterServer: @unchecked Sendable {
     private func stopBridge() {
         logger.info("stopping mcpbridge")
         stopWorkspacePolling()
+        stopDiagnosticsPolling()
         editorContext?.stop()
         editorContext = nil
         ownedBridgeClient?.stop()
@@ -231,6 +236,58 @@ public final class AdapterServer: @unchecked Sendable {
     private func stopWorkspacePolling() {
         workspacePoller?.cancel()
         workspacePoller = nil
+    }
+
+    private func startDiagnosticsPolling() {
+        let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
+        timer.schedule(deadline: .now() + .seconds(3), repeating: .seconds(3))
+        timer.setEventHandler { [weak self] in
+            guard let self, self.state.claudeConnected else { return }
+            Task { await self.pollDiagnostics() }
+        }
+        timer.resume()
+        self.diagnosticsPoller = timer
+    }
+
+    private func stopDiagnosticsPolling() {
+        diagnosticsPoller?.cancel()
+        diagnosticsPoller = nil
+        lastDiagnosticsSnapshot = [:]
+    }
+
+    private func pollDiagnostics() async {
+        guard let client = ownedBridgeClient ?? sharedBridgeClient,
+              let tabId = toolRouter?.tabIdentifier else { return }
+
+        let args: [String: JSONValue] = [
+            "tabIdentifier": .string(tabId),
+            "severity": .string("remark")
+        ]
+
+        guard let result = try? await client.callTool(name: "XcodeListNavigatorIssues", arguments: args),
+              let text = result.content.first?.text,
+              let data = text.data(using: .utf8),
+              let raw = try? JSONDecoder().decode(JSONValue.self, from: data),
+              let issues = raw["issues"]?.arrayValue else { return }
+
+        var snapshot: [String: String] = [:]
+        for issue in issues {
+            guard let path = issue["path"]?.stringValue else { continue }
+            let uri = "file://\(path)"
+            let entry = "\(issue["line"]?.intValue ?? 0):\(issue["severity"]?.stringValue ?? ""):\(issue["message"]?.stringValue ?? "")"
+            snapshot[uri, default: ""] += entry + "|"
+        }
+
+        let changedUris = snapshot.keys.filter { snapshot[$0] != lastDiagnosticsSnapshot[$0] }
+            + lastDiagnosticsSnapshot.keys.filter { snapshot[$0] == nil }
+
+        guard !changedUris.isEmpty else { return }
+        lastDiagnosticsSnapshot = snapshot
+
+        let params: JSONValue = .object(["uris": .array(changedUris.map { .string($0) })])
+        let notification = JSONRPCNotification(method: "diagnostics_changed", params: params)
+        logger.info("diagnostics_changed: \(changedUris.count) file(s) changed")
+        webSocketServer?.sendNotification(notification)
     }
 
     private func lookupClientPID() -> Int32? {
