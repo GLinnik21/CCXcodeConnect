@@ -25,7 +25,6 @@ public final class AdapterServer: @unchecked Sendable {
     public var onStateChange: ((AdapterServerState) -> Void)?
 
     private var state = AdapterServerState()
-    private var serverPort: Int?
     private var lockFileManager: LockFileManager?
     private var webSocketServer: WebSocketServer?
     private var ownedBridgeClient: MCPBridgeClient?
@@ -66,12 +65,12 @@ public final class AdapterServer: @unchecked Sendable {
             guard let self else { return }
             self.state.claudeConnected = true
             self.onStateChange?(self.state)
-            DispatchQueue.global(qos: .utility).async { [weak self] in
-                guard let self else { return }
-                let pid = self.lookupClientPID()
-                self.state.connectedPID = pid
-                self.onStateChange?(self.state)
-            }
+        }
+        server.onIdeConnected = { [weak self] pid in
+            guard let self else { return }
+            logger.info("Claude Code connected, PID=\(pid)")
+            self.state.connectedPID = pid
+            self.onStateChange?(self.state)
         }
         server.onClientDisconnected = { [weak self] in
             guard let self else { return }
@@ -81,7 +80,6 @@ public final class AdapterServer: @unchecked Sendable {
         }
 
         let port = try await server.start()
-        self.serverPort = port
         self.state.port = port
         self.webSocketServer = server
 
@@ -288,29 +286,6 @@ public final class AdapterServer: @unchecked Sendable {
         let notification = JSONRPCNotification(method: "diagnostics_changed", params: params)
         logger.info("diagnostics_changed: \(changedUris.count) file(s) changed")
         webSocketServer?.sendNotification(notification)
-    }
-
-    private func lookupClientPID() -> Int32? {
-        guard let port = serverPort else { return nil }
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/sbin/lsof")
-        process.arguments = ["-i", "tcp:\(port)", "-sTCP:ESTABLISHED", "-Fp"]
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-            process.waitUntilExit()
-        } catch { return nil }
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8) else { return nil }
-        let myPid = ProcessInfo.processInfo.processIdentifier
-        for line in output.components(separatedBy: .newlines) {
-            if line.hasPrefix("p"), let pid = Int32(line.dropFirst()), pid != myPid {
-                return pid
-            }
-        }
-        return nil
     }
 
     struct WindowInfo {

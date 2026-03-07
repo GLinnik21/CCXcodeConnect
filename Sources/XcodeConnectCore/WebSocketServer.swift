@@ -21,6 +21,7 @@ public final class WebSocketServer: @unchecked Sendable {
     }
     public var onClientConnected: (() -> Void)?
     public var onClientDisconnected: (() -> Void)?
+    public var onIdeConnected: ((Int32) -> Void)?
 
     private static let pingInterval: TimeInterval = 30
     private static let pongTimeout: TimeInterval = 60
@@ -218,6 +219,12 @@ public final class WebSocketServer: @unchecked Sendable {
             logger.info("req tools/call \(name) id=\(idStr)")
         } else {
             logger.info("req \(request.method) id=\(idStr)")
+        }
+
+        if request.method == "ide_connected", request.id == nil,
+           let pid = request.params?["pid"]?.intValue {
+            logger.info("ide_connected: Claude Code PID=\(pid)")
+            onIdeConnected?(Int32(pid))
         }
 
         Task {
