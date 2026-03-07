@@ -4,15 +4,12 @@ public final class XcodeMonitor {
     private let onStateChange: (Bool) -> Void
     private var observer: NSObjectProtocol?
     private var terminateObserver: NSObjectProtocol?
-    private var wasRunning = false
 
     public init(onStateChange: @escaping (Bool) -> Void) {
         self.onStateChange = onStateChange
     }
 
     public func startMonitoring() {
-        wasRunning = Self.isXcodeRunning()
-
         observer = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didLaunchApplicationNotification,
             object: nil,
@@ -20,7 +17,6 @@ public final class XcodeMonitor {
         ) { [weak self] notification in
             guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
                   app.bundleIdentifier?.hasPrefix("com.apple.dt.Xcode") == true else { return }
-            self?.wasRunning = true
             self?.onStateChange(true)
         }
 
@@ -31,7 +27,6 @@ public final class XcodeMonitor {
         ) { [weak self] notification in
             guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
                   app.bundleIdentifier?.hasPrefix("com.apple.dt.Xcode") == true else { return }
-            self?.wasRunning = false
             self?.onStateChange(false)
         }
     }

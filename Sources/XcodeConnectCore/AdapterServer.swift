@@ -145,9 +145,7 @@ public final class AdapterServer: @unchecked Sendable {
         self.editorContext = context
         router.editorContext = context
 
-        if targetWorkspace != nil {
-            lockFileManager?.write(workspaceFolders: [targetWorkspace!])
-        } else {
+        if targetWorkspace == nil {
             let workspaces = WorkspaceDetector.detect()
             lastWorkspacePaths = workspaces.map(\.path)
             if let first = workspaces.first {
@@ -165,26 +163,17 @@ public final class AdapterServer: @unchecked Sendable {
         }
 
         let workspace = targetWorkspace
-        if let owned = ownedBridgeClient {
-            Task {
-                do {
+        let owned = ownedBridgeClient
+        Task {
+            do {
+                if let owned {
                     try await owned.start()
-                    let tabId = try await Self.detectTabIdentifier(bridgeClient: owned, forWorkspace: workspace)
-                    router.tabIdentifier = tabId
-                    logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
-                } catch {
-                    logger.error("failed to start bridge: \(error)")
                 }
-            }
-        } else {
-            Task {
-                do {
-                    let tabId = try await Self.detectTabIdentifier(bridgeClient: client, forWorkspace: workspace)
-                    router.tabIdentifier = tabId
-                    logger.info("tabIdentifier=\(tabId ?? "nil") for \(workspace ?? "default")")
-                } catch {
-                    logger.error("failed to detect tab: \(error)")
-                }
+                let tabId = try await Self.detectTabIdentifier(bridgeClient: client, forWorkspace: workspace)
+                router.tabIdentifier = tabId
+                logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
+            } catch {
+                logger.error("failed to start bridge: \(error)")
             }
         }
     }

@@ -49,11 +49,15 @@ enum OpenFileTool {
         guard let contents = try? String(contentsOfFile: filePath, encoding: .utf8) else {
             return nil
         }
-        for (index, line) in contents.components(separatedBy: .newlines).enumerated() {
+        var found: Int?
+        var lineNumber = 1
+        contents.enumerateLines { line, stop in
             if line.contains(text) {
-                return index + 1
+                found = lineNumber
+                stop = true
             }
+            lineNumber += 1
         }
-        return nil
+        return found
     }
 }

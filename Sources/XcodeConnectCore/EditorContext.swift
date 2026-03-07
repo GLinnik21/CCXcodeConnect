@@ -70,8 +70,7 @@ public final class EditorContext: @unchecked Sendable {
         lastSelectionStart = rangeStart
         lastSelectionEnd = rangeEnd
 
-        let (startLine, startChar) = TextOffsetConverter.offsetToLineChar(in: fileContents, offset: rangeStart)
-        let (endLine, endChar) = TextOffsetConverter.offsetToLineChar(in: fileContents, offset: rangeEnd)
+        let ((startLine, startChar), (endLine, endChar)) = TextOffsetConverter.twoOffsetsToLineChars(in: fileContents, first: rangeStart, second: rangeEnd)
         let isEmpty = rangeStart == rangeEnd
 
         let selectedText: String
@@ -176,30 +175,11 @@ public final class EditorContext: @unchecked Sendable {
         end tell
         """
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", script]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
+        let output: String
         do {
-            try process.run()
-            process.waitUntilExit()
+            output = try runAppleScript(script)
         } catch {
-            logger.error("queryXcode: failed to run osascript: \(error)")
-            return nil
-        }
-
-        guard process.terminationStatus == 0 else {
-            logger.debug("queryXcode: osascript exited with \(process.terminationStatus)")
-            return nil
-        }
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
-            logger.warning("queryXcode: failed to read osascript output")
+            logger.debug("queryXcode: \(error)")
             return nil
         }
 

@@ -25,52 +25,25 @@ enum SaveDocumentTool {
         end tell
         """
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", script]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
+        let output: String
         do {
-            try process.run()
-            process.waitUntilExit()
+            output = try runAppleScript(script)
         } catch {
             return .error("Failed to save document: \(error)")
         }
 
-        guard process.terminationStatus == 0 else {
-            return .error("AppleScript failed with exit code \(process.terminationStatus)")
-        }
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
-            return .error("Failed to read AppleScript output")
-        }
-
         if output == "NOT_FOUND" {
-            let failResult: JSONValue = .object([
+            return .json(.object([
                 "success": .bool(false),
                 "message": .string("Document not open: \(filePath)")
-            ])
-            let encoder = JSONEncoder()
-            if let data = try? encoder.encode(failResult), let str = String(data: data, encoding: .utf8) {
-                return .text(str)
-            }
-            return .error("Document not found in Xcode: \(filePath)")
+            ]))
         }
 
-        let result: JSONValue = .object([
+        return .json(.object([
             "success": .bool(true),
             "filePath": .string(filePath),
             "saved": .bool(true),
             "message": .string("Document saved successfully")
-        ])
-        let encoder = JSONEncoder()
-        if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {
-            return .text(str)
-        }
-        return .text("SAVED")
+        ]))
     }
 }

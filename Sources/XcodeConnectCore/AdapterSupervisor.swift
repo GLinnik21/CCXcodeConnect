@@ -30,6 +30,10 @@ public final class AdapterSupervisor: @unchecked Sendable {
     public func shutdown() {
         stopPolling()
         xcodeMonitor?.stopMonitoring()
+        tearDownAllWorkers()
+    }
+
+    private func tearDownAllWorkers() {
         queue.sync {
             for (_, server) in workers {
                 server.shutdown()
@@ -49,15 +53,7 @@ public final class AdapterSupervisor: @unchecked Sendable {
             startBridge()
         } else {
             stopPolling()
-            queue.sync {
-                for (_, server) in workers {
-                    server.shutdown()
-                }
-                workers.removeAll()
-                workerStates.removeAll()
-            }
-            bridgeClient?.stop()
-            bridgeClient = nil
+            tearDownAllWorkers()
             onStateChange?([])
         }
     }
@@ -170,6 +166,6 @@ public final class AdapterSupervisor: @unchecked Sendable {
     }
 
     private func collectStatesLocked() -> [AdapterServerState] {
-        workerStates.keys.sorted().compactMap { workerStates[$0] }
+        workerStates.sorted(by: { $0.key < $1.key }).map(\.value)
     }
 }

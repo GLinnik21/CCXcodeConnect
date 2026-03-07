@@ -53,7 +53,7 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
 
         logger.info("starting mcpbridge process (xcrun mcpbridge)")
         try process.run()
-        isRunning = true
+        lock.withLock { isRunning = true }
 
         try await Task.sleep(nanoseconds: 500_000_000)
         try await initialize()
@@ -70,7 +70,7 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
         process = nil
         stdinPipe = nil
         stdoutPipe = nil
-        isRunning = false
+        lock.withLock { isRunning = false }
     }
 
     public func listTools() async throws -> [MCPToolDefinition] {
@@ -131,7 +131,7 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     }
 
     private func sendRequest(method: String, params: JSONValue? = nil) async throws -> JSONValue {
-        guard isRunning else {
+        guard lock.withLock({ isRunning }) else {
             logger.error("bridge sendRequest \(method): not running")
             throw BridgeError.notRunning
         }
@@ -171,12 +171,17 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     private func handleData(_ data: Data) {
         readBuffer.append(data)
 
-        while let newlineIndex = readBuffer.firstIndex(of: 0x0a) {
-            let lineData = readBuffer[readBuffer.startIndex..<newlineIndex]
-            readBuffer = Data(readBuffer[readBuffer.index(after: newlineIndex)...])
+        var searchStart = readBuffer.startIndex
+        while let newlineIndex = readBuffer[searchStart...].firstIndex(of: 0x0a) {
+            let lineData = readBuffer[searchStart..<newlineIndex]
+            searchStart = readBuffer.index(after: newlineIndex)
+            if !lineData.isEmpty {
+                handleLine(Data(lineData))
+            }
+        }
 
-            guard !lineData.isEmpty else { continue }
-            handleLine(Data(lineData))
+        if searchStart > readBuffer.startIndex {
+            readBuffer = Data(readBuffer[searchStart...])
         }
     }
 

@@ -25,28 +25,11 @@ enum GetOpenEditorsTool {
         end tell
         """
 
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", script]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
+        let output: String
         do {
-            try process.run()
-            process.waitUntilExit()
+            output = try runAppleScript(script)
         } catch {
             return .error("Failed to query open editors: \(error)")
-        }
-
-        guard process.terminationStatus == 0 else {
-            return .error("AppleScript failed with exit code \(process.terminationStatus)")
-        }
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else {
-            return .text("[]")
         }
 
         var editors: [JSONValue] = []
@@ -71,12 +54,6 @@ enum GetOpenEditorsTool {
         }
 
         logger.info("getOpenEditors returning \(editors.count) editors")
-
-        let encoder = JSONEncoder()
-        let result: JSONValue = .object(["tabs": .array(editors)])
-        if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {
-            return .text(str)
-        }
-        return .error("Failed to encode editors")
+        return .json(.object(["tabs": .array(editors)]))
     }
 }

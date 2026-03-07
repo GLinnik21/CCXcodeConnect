@@ -180,6 +180,14 @@ public struct MCPToolResult: Codable {
     public static func error(_ text: String) -> MCPToolResult {
         MCPToolResult(content: [.init(type: "text", text: text)], isError: true)
     }
+
+    public static func json(_ value: JSONValue) -> MCPToolResult {
+        guard let data = try? JSONEncoder().encode(value),
+              let str = String(data: data, encoding: .utf8) else {
+            return .error("Failed to encode result")
+        }
+        return .text(str)
+    }
 }
 
 public struct MCPContent: Codable {

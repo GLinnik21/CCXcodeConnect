@@ -18,29 +18,15 @@ public struct WorkspaceInfo {
 public enum WorkspaceDetector {
     public static func detect() -> [WorkspaceInfo] {
         let script = "tell application \"Xcode\" to return path of every workspace document"
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        process.arguments = ["-e", script]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
+        let output: String
         do {
-            try process.run()
-            process.waitUntilExit()
+            output = try runAppleScript(script)
         } catch {
-            logger.error("workspace detect: failed to run osascript: \(error)")
+            logger.debug("workspace detect: \(error)")
             return []
         }
 
-        guard process.terminationStatus == 0 else {
-            logger.debug("workspace detect: osascript exited with \(process.terminationStatus)")
-            return []
-        }
-
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        guard let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) else { return [] }
+        guard !output.isEmpty else { return [] }
 
         let projectExtensions: Set<String> = ["xcodeproj", "xcworkspace", "playground"]
         let results = output.components(separatedBy: ", ").compactMap { path -> WorkspaceInfo? in

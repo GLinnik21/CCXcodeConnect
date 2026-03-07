@@ -8,18 +8,13 @@ enum GetSelectionTool {
         logger.info("getCurrentSelection called")
 
         guard let snapshot = editorContext?.currentSelection() else {
-            let failJson: JSONValue = .object([
+            return .json(.object([
                 "success": .bool(false),
                 "message": .string("No active editor found")
-            ])
-            let encoder = JSONEncoder()
-            if let data = try? encoder.encode(failJson), let str = String(data: data, encoding: .utf8) {
-                return .text(str)
-            }
-            return .text("{}")
+            ]))
         }
 
-        let result: JSONValue = .object([
+        return .json(.object([
             "success": .bool(true),
             "text": .string(snapshot.text),
             "filePath": .string(snapshot.filePath),
@@ -29,12 +24,6 @@ enum GetSelectionTool {
                 "end": .object(["line": .int(snapshot.endLine), "character": .int(snapshot.endCharacter)]),
                 "isEmpty": .bool(snapshot.isEmpty)
             ])
-        ])
-
-        let encoder = JSONEncoder()
-        if let data = try? encoder.encode(result), let str = String(data: data, encoding: .utf8) {
-            return .text(str)
-        }
-        return .error("Failed to encode selection")
+        ]))
     }
 }
