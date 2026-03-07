@@ -73,6 +73,7 @@ final class MCPToolRouterTests: XCTestCase {
     func testGetOpenEditorsReturnsTabsWrapper() async throws {
         let (router, _) = makeRouter()
         let result = await router.callTool(name: "getOpenEditors", arguments: [:])
+        try XCTSkipIf(result.isError == true, "Xcode not running")
         let text = try XCTUnwrap(result.content.first?.text)
         let data = try XCTUnwrap(text.data(using: .utf8))
         let json = try JSONDecoder().decode(JSONValue.self, from: data)
