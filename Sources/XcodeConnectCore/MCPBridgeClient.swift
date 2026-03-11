@@ -32,7 +32,10 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
 
         stdout.fileHandleForReading.readabilityHandler = { [weak self] handle in
             let data = handle.availableData
-            guard !data.isEmpty else { return }
+            guard !data.isEmpty else {
+                handle.readabilityHandler = nil
+                return
+            }
             self?.handleData(data)
         }
 
