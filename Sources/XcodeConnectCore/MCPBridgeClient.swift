@@ -12,6 +12,8 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
     private let lock = NSLock()
     private var readBuffer = Data()
     private var isRunning = false
+    private var hasStartedOnce = false
+    private var restartTask: Task<Void, Error>?
 
     public init() {}
 
@@ -60,20 +62,19 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
 
         try await Task.sleep(nanoseconds: 500_000_000)
         try await initialize()
+        lock.withLock { hasStartedOnce = true }
         logger.info("mcpbridge initialized")
     }
 
     public func stop() {
         logger.info("stopping mcpbridge")
-        stdinPipe?.fileHandleForWriting.closeFile()
-        stdoutPipe?.fileHandleForReading.readabilityHandler = nil
-        if process?.isRunning == true {
-            process?.terminate()
+        cleanupProcess()
+        lock.withLock {
+            isRunning = false
+            hasStartedOnce = false
+            restartTask?.cancel()
+            restartTask = nil
         }
-        process = nil
-        stdinPipe = nil
-        stdoutPipe = nil
-        lock.withLock { isRunning = false }
     }
 
     public func listTools() async throws -> [MCPToolDefinition] {
@@ -133,7 +134,45 @@ public final class MCPBridgeClient: @unchecked Sendable, ToolCallable {
         sendNotification(method: "notifications/initialized")
     }
 
+    private func ensureRunning() async throws {
+        let (running, started) = lock.withLock { (isRunning, hasStartedOnce) }
+        guard !running, started else { return }
+
+        let task: Task<Void, Error> = lock.withLock {
+            if let existing = restartTask { return existing }
+            let t = Task { [weak self] in
+                guard let self else { return }
+                logger.info("auto-restarting mcpbridge")
+                self.cleanupProcess()
+                do {
+                    try await self.start()
+                } catch {
+                    self.lock.withLock { self.restartTask = nil }
+                    throw error
+                }
+                self.lock.withLock { self.restartTask = nil }
+            }
+            restartTask = t
+            return t
+        }
+        try await task.value
+    }
+
+    private func cleanupProcess() {
+        stdinPipe?.fileHandleForWriting.closeFile()
+        stdoutPipe?.fileHandleForReading.readabilityHandler = nil
+        if process?.isRunning == true {
+            process?.terminate()
+        }
+        process = nil
+        stdinPipe = nil
+        stdoutPipe = nil
+        readBuffer = Data()
+    }
+
     private func sendRequest(method: String, params: JSONValue? = nil) async throws -> JSONValue {
+        try await ensureRunning()
+
         guard lock.withLock({ isRunning }) else {
             logger.error("bridge sendRequest \(method): not running")
             throw BridgeError.notRunning

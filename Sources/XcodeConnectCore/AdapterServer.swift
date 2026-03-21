@@ -99,6 +99,7 @@ public final class AdapterServer: @unchecked Sendable {
     }
 
     public func shutdown() {
+        state.xcodeRunning = false
         stopWorkspacePolling()
         stopDiagnosticsPolling()
         xcodeMonitor?.stopMonitoring()
@@ -163,18 +164,9 @@ public final class AdapterServer: @unchecked Sendable {
         }
 
         let workspace = targetWorkspace
-        let owned = ownedBridgeClient
+        let useOwned = ownedBridgeClient != nil
         Task {
-            do {
-                if let owned {
-                    try await owned.start()
-                }
-                let tabId = try await Self.detectTabIdentifier(bridgeClient: client, forWorkspace: workspace)
-                router.tabIdentifier = tabId
-                logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
-            } catch {
-                logger.error("failed to start bridge: \(error)")
-            }
+            await self.startBridgeWithRetry(useOwnedBridge: useOwned, sharedClient: client, router: router, workspace: workspace)
         }
     }
 
@@ -192,6 +184,43 @@ public final class AdapterServer: @unchecked Sendable {
         lastWorkspacePaths = []
         lockFileManager?.write(workspaceFolders: [])
         onStateChange?(state)
+    }
+
+    private func startBridgeWithRetry(useOwnedBridge: Bool, sharedClient: any ToolCallable, router: MCPToolRouter, workspace: String?) async {
+        await BridgeRetry.execute(
+            shouldContinue: { [weak self] in self?.state.xcodeRunning ?? false },
+            operation: { [weak self] in
+                guard let self else { return }
+
+                let bridgeClient: any ToolCallable
+                if useOwnedBridge {
+                    let owned = MCPBridgeClient()
+                    self.ownedBridgeClient = owned
+                    do {
+                        try await owned.start()
+                    } catch {
+                        owned.stop()
+                        self.ownedBridgeClient = nil
+                        throw error
+                    }
+                    bridgeClient = owned
+                } else {
+                    bridgeClient = sharedClient
+                }
+
+                do {
+                    let tabId = try await Self.detectTabIdentifier(bridgeClient: bridgeClient, forWorkspace: workspace)
+                    router.tabIdentifier = tabId
+                    logger.info("mcpbridge ready, tabIdentifier=\(tabId ?? "nil")")
+                } catch {
+                    if useOwnedBridge {
+                        self.ownedBridgeClient?.stop()
+                        self.ownedBridgeClient = nil
+                    }
+                    throw error
+                }
+            }
+        )
     }
 
     private func startWorkspacePolling() {

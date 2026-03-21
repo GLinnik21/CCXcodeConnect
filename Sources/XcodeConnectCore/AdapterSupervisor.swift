@@ -65,18 +65,27 @@ public final class AdapterSupervisor: @unchecked Sendable {
             return
         }
 
-        let client = MCPBridgeClient()
-        self.bridgeClient = client
-
         Task {
-            do {
-                try await client.start()
-                logger.info("shared mcpbridge ready")
-                self.pollWorkspaces()
-                self.startPolling()
-            } catch {
-                logger.error("failed to start shared mcpbridge: \(error)")
-            }
+            await BridgeRetry.execute(
+                shouldContinue: { [weak self] in
+                    self?.queue.sync { self?.xcodeRunning ?? false } ?? false
+                },
+                operation: { [weak self] in
+                    guard let self else { return }
+                    let client = MCPBridgeClient()
+                    self.queue.sync { self.bridgeClient = client }
+                    do {
+                        try await client.start()
+                        logger.info("shared mcpbridge ready")
+                        self.pollWorkspaces()
+                        self.startPolling()
+                    } catch {
+                        client.stop()
+                        self.queue.sync { self.bridgeClient = nil }
+                        throw error
+                    }
+                }
+            )
         }
     }
 
