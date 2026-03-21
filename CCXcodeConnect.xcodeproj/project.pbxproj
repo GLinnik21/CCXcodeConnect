@@ -28,7 +28,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CCCC00012F4A0001000CC80C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		CCCC00012F4A0001000CC80C /* Exceptions for "CCXcodeConnect" folder in "CCXcodeConnect" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -41,7 +41,7 @@
 		838E77842F4A4775000CC80C /* CCXcodeConnect */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				CCCC00012F4A0001000CC80C /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+				CCCC00012F4A0001000CC80C /* Exceptions for "CCXcodeConnect" folder in "CCXcodeConnect" target */,
 			);
 			path = CCXcodeConnect;
 			sourceTree = "<group>";

@@ -38,8 +38,10 @@ public final class AdapterServer: @unchecked Sendable {
     private var lastWorkspacePaths: [String] = []
     private let targetWorkspace: String?
     private let windowName: String?
+    private let settings: AdapterSettingsProviding
 
-    public init(targetWorkspace: String? = nil, windowName: String? = nil, sharedBridgeClient: (any ToolCallable)? = nil) {
+    public init(settings: AdapterSettingsProviding, targetWorkspace: String? = nil, windowName: String? = nil, sharedBridgeClient: (any ToolCallable)? = nil) {
+        self.settings = settings
         self.targetWorkspace = targetWorkspace
         self.windowName = windowName
         self.sharedBridgeClient = sharedBridgeClient
@@ -140,7 +142,7 @@ public final class AdapterServer: @unchecked Sendable {
         webSocketServer?.toolRouter = router
 
         let wsName = windowName ?? targetWorkspace.map { URL(fileURLWithPath: $0).lastPathComponent }
-        let context = EditorContext(workspaceName: wsName) { [weak self] notification in
+        let context = EditorContext(settings: settings, workspaceName: wsName) { [weak self] notification in
             self?.webSocketServer?.sendNotification(notification)
         }
         self.editorContext = context
@@ -157,7 +159,9 @@ public final class AdapterServer: @unchecked Sendable {
         }
         onStateChange?(state)
         context.start()
-        startDiagnosticsPolling()
+        if settings.diagnosticsPollingEnabled {
+            startDiagnosticsPolling()
+        }
 
         if targetWorkspace == nil {
             startWorkspacePolling()
@@ -188,6 +192,7 @@ public final class AdapterServer: @unchecked Sendable {
 
     private func startBridgeWithRetry(useOwnedBridge: Bool, sharedClient: any ToolCallable, router: MCPToolRouter, workspace: String?) async {
         await BridgeRetry.execute(
+            settings: settings,
             shouldContinue: { [weak self] in self?.state.xcodeRunning ?? false },
             operation: { [weak self] in
                 guard let self else { return }
@@ -224,8 +229,9 @@ public final class AdapterServer: @unchecked Sendable {
     }
 
     private func startWorkspacePolling() {
+        let ms = Int(settings.workspacePollingInterval * 1000)
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
-        timer.schedule(deadline: .now() + .seconds(3), repeating: .seconds(3))
+        timer.schedule(deadline: .now() + .milliseconds(ms), repeating: .milliseconds(ms))
         timer.setEventHandler { [weak self] in
             guard let self else { return }
             let workspaces = WorkspaceDetector.detect()
@@ -255,8 +261,9 @@ public final class AdapterServer: @unchecked Sendable {
     }
 
     private func startDiagnosticsPolling() {
+        let ms = Int(settings.diagnosticsPollingInterval * 1000)
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
-        timer.schedule(deadline: .now() + .seconds(3), repeating: .seconds(3))
+        timer.schedule(deadline: .now() + .milliseconds(ms), repeating: .milliseconds(ms))
         timer.setEventHandler { [weak self] in
             guard let self, self.state.claudeConnected else { return }
             Task { await self.pollDiagnostics() }

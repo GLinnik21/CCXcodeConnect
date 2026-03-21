@@ -28,15 +28,19 @@ public final class EditorContext: @unchecked Sendable {
         snapshotLock.withLock { _lastSnapshot }
     }
 
-    public init(workspaceName: String? = nil, sendNotification: @escaping (JSONRPCNotification) -> Void) {
+    private let settings: AdapterSettingsProviding
+
+    public init(settings: AdapterSettingsProviding, workspaceName: String? = nil, sendNotification: @escaping (JSONRPCNotification) -> Void) {
+        self.settings = settings
         self.workspaceName = workspaceName
         self.sendNotification = sendNotification
     }
 
     public func start() {
-        logger.info("editor context polling started (500ms)")
+        let ms = Int(settings.editorPollingInterval * 1000)
+        logger.info("editor context polling started (\(ms)ms)")
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
-        timer.schedule(deadline: .now(), repeating: .milliseconds(500))
+        timer.schedule(deadline: .now(), repeating: .milliseconds(ms))
         timer.setEventHandler { [weak self] in
             self?.poll()
         }

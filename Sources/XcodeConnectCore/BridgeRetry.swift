@@ -4,15 +4,26 @@ import Logging
 private let logger = Logger(label: "bridge.retry")
 
 enum BridgeRetry {
-    static let maxRetries = 10
-
-    static func delay(forAttempt attempt: Int) -> Int {
-        min(2 * (attempt + 1), 10)
+    static func delay(forAttempt attempt: Int, maxDelay: Int = 10) -> Int {
+        min(2 * (attempt + 1), maxDelay)
     }
 
     static func execute(
-        maxRetries: Int = BridgeRetry.maxRetries,
-        delayNanoseconds: @Sendable (Int) -> UInt64 = { attempt in UInt64(BridgeRetry.delay(forAttempt: attempt)) * 1_000_000_000 },
+        settings: AdapterSettingsProviding,
+        shouldContinue: @Sendable () -> Bool,
+        operation: @Sendable () async throws -> Void
+    ) async {
+        await execute(
+            maxRetries: settings.bridgeMaxRetries,
+            delayNanoseconds: { attempt in UInt64(delay(forAttempt: attempt, maxDelay: settings.bridgeMaxRetryDelay)) * 1_000_000_000 },
+            shouldContinue: shouldContinue,
+            operation: operation
+        )
+    }
+
+    static func execute(
+        maxRetries: Int,
+        delayNanoseconds: @Sendable (Int) -> UInt64,
         shouldContinue: @Sendable () -> Bool,
         operation: @Sendable () async throws -> Void
     ) async {

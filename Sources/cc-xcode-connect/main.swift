@@ -20,8 +20,10 @@ let workspacePath: String? = {
 signal(SIGINT, SIG_IGN)
 signal(SIGTERM, SIG_IGN)
 
+let settings = AdapterSettings()
+
 if let workspacePath {
-    let server = AdapterServer(targetWorkspace: workspacePath)
+    let server = AdapterServer(settings: settings, targetWorkspace: workspacePath)
     server.onStateChange = { state in
         var parts: [String] = []
         parts.append("Xcode: \(state.xcodeRunning ? "running" : "not running")")
@@ -62,7 +64,7 @@ if let workspacePath {
     CFRunLoopRun()
     server.shutdown()
 } else {
-    let supervisor = AdapterSupervisor()
+    let supervisor = AdapterSupervisor(settings: settings)
     supervisor.onStateChange = { states in
         if states.isEmpty {
             print("Xcode: not running")

@@ -14,7 +14,11 @@ public final class AdapterSupervisor: @unchecked Sendable {
     private var bridgeClient: MCPBridgeClient?
     private var xcodeRunning = false
 
-    public init() {}
+    private let settings: AdapterSettingsProviding
+
+    public init(settings: AdapterSettingsProviding) {
+        self.settings = settings
+    }
 
     public func start() {
         xcodeMonitor = XcodeMonitor { [weak self] running in
@@ -67,6 +71,7 @@ public final class AdapterSupervisor: @unchecked Sendable {
 
         Task {
             await BridgeRetry.execute(
+                settings: self.settings,
                 shouldContinue: { [weak self] in
                     self?.queue.sync { self?.xcodeRunning ?? false } ?? false
                 },
@@ -92,7 +97,8 @@ public final class AdapterSupervisor: @unchecked Sendable {
     private func startPolling() {
         guard workspacePoller == nil else { return }
         let timer = DispatchSource.makeTimerSource(queue: DispatchQueue.global(qos: .utility))
-        timer.schedule(deadline: .now() + .seconds(3), repeating: .seconds(3))
+        let ms = Int(settings.workspacePollingInterval * 1000)
+        timer.schedule(deadline: .now() + .milliseconds(ms), repeating: .milliseconds(ms))
         timer.setEventHandler { [weak self] in
             self?.pollWorkspaces()
         }
@@ -133,7 +139,7 @@ public final class AdapterSupervisor: @unchecked Sendable {
 
     private func createWorkerLocked(workspace: WorkspaceInfo) {
         logger.info("creating worker for \(workspace.name) at \(workspace.path)")
-        let server = AdapterServer(targetWorkspace: workspace.path, windowName: workspace.windowName, sharedBridgeClient: bridgeClient)
+        let server = AdapterServer(settings: settings, targetWorkspace: workspace.path, windowName: workspace.windowName, sharedBridgeClient: bridgeClient)
         let path = workspace.path
         server.onStateChange = { [weak self] state in
             guard let self else { return }
