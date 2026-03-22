@@ -54,6 +54,11 @@ public final class EditorContext: @unchecked Sendable {
         timer = nil
     }
 
+    public func restart() {
+        stop()
+        start()
+    }
+
     private func poll() {
         guard let (filePath, rangeStart, rangeEnd, windowWorkspace) = queryXcode() else { return }
 

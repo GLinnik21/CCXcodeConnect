@@ -111,6 +111,18 @@ public final class AdapterServer: @unchecked Sendable {
         webSocketServer?.stop()
     }
 
+    public func restartPolling() {
+        stopWorkspacePolling()
+        stopDiagnosticsPolling()
+        editorContext?.restart()
+        if targetWorkspace == nil {
+            startWorkspacePolling()
+        }
+        if settings.diagnosticsPollingEnabled {
+            startDiagnosticsPolling()
+        }
+    }
+
     public func handleXcodeStateChange(running: Bool) {
         logger.info("Xcode \(running ? "launched" : "quit")")
         state.xcodeRunning = running

@@ -31,6 +31,16 @@ public final class AdapterSupervisor: @unchecked Sendable {
         }
     }
 
+    public func restartPolling() {
+        stopPolling()
+        startPolling()
+        queue.sync {
+            for (_, server) in workers {
+                server.restartPolling()
+            }
+        }
+    }
+
     public func shutdown() {
         stopPolling()
         xcodeMonitor?.stopMonitoring()

@@ -90,6 +90,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.statusItem.menu = menu
     }
 
+    func restartPolling() {
+        supervisor?.restartPolling()
+    }
+
     @objc private func openSettings() {
         SettingsWindowController.show(settings: settings)
     }

@@ -17,7 +17,7 @@ final class SettingsWindowController: NSWindowController {
     init(settings: AdapterSettings) {
         let viewController = SettingsViewController(settings: settings)
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 460, height: 520),
+            contentRect: NSRect(x: 0, y: 0, width: 460, height: 700),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -61,7 +61,7 @@ private final class SettingsViewController: NSViewController {
     required init?(coder: NSCoder) { fatalError() }
 
     override func loadView() {
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: 460, height: 520))
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 460, height: 700))
 
         let scroll = NSScrollView()
         scroll.translatesAutoresizingMaskIntoConstraints = false
@@ -125,14 +125,14 @@ private final class SettingsViewController: NSViewController {
 
         stack.addArrangedSubview(makeSection(
             "Polling",
-            description: "How often the adapter checks Xcode for changes. Lower values are more responsive but use more CPU. Changes take effect on next Xcode launch.",
+            description: "How often the adapter checks Xcode for changes. Lower values are more responsive but use more CPU.",
             rows: [
-                makeFormRow(label: "Diagnostics", control: diagnosticsRow),
-                makeHint("Send build errors and warnings to Claude Code."),
                 makeFormRow(label: "Workspace", control: makeFieldStepper(workspaceIntervalField, workspaceIntervalStepper, suffix: "sec")),
                 makeHint("How often to detect opened or closed projects."),
                 makeFormRow(label: "Editor Selection", control: makeFieldStepper(editorIntervalField, editorIntervalStepper, suffix: "sec")),
                 makeHint("How often to track cursor and selection in Xcode."),
+                makeFormRow(label: "Diagnostics", control: diagnosticsRow),
+                makeHint("Pushes build errors/warnings proactively. Claude already polls diagnostics on its own. Not yet consumed by CLI. Experimental."),
             ]
         ))
 
@@ -210,6 +210,7 @@ private final class SettingsViewController: NSViewController {
     @objc private func diagnosticsEnabledChanged(_ sender: NSSwitch) {
         settings.diagnosticsPollingEnabled = sender.state == .on
         updateDiagnosticsFieldsEnabled()
+        notifyPollingChanged()
     }
 
     private func updateDiagnosticsFieldsEnabled() {
@@ -221,16 +222,23 @@ private final class SettingsViewController: NSViewController {
     @objc private func diagnosticsIntervalChanged(_ sender: Any) {
         syncStepperField(field: diagnosticsIntervalField, stepper: diagnosticsIntervalStepper, sender: sender)
         settings.diagnosticsPollingInterval = diagnosticsIntervalStepper.doubleValue
+        notifyPollingChanged()
     }
 
     @objc private func workspaceIntervalChanged(_ sender: Any) {
         syncStepperField(field: workspaceIntervalField, stepper: workspaceIntervalStepper, sender: sender)
         settings.workspacePollingInterval = workspaceIntervalStepper.doubleValue
+        notifyPollingChanged()
     }
 
     @objc private func editorIntervalChanged(_ sender: Any) {
         syncStepperField(field: editorIntervalField, stepper: editorIntervalStepper, sender: sender)
         settings.editorPollingInterval = editorIntervalStepper.doubleValue
+        notifyPollingChanged()
+    }
+
+    private func notifyPollingChanged() {
+        (NSApp.delegate as? AppDelegate)?.restartPolling()
     }
 
     @objc private func maxRetriesChanged(_ sender: Any) {
@@ -246,6 +254,7 @@ private final class SettingsViewController: NSViewController {
     @objc private func resetToDefaults(_ sender: Any) {
         settings.resetToDefaults()
         loadValues()
+        notifyPollingChanged()
     }
 
     private func syncStepperField(field: NSTextField, stepper: NSStepper, sender: Any) {
@@ -275,7 +284,7 @@ private final class SettingsViewController: NSViewController {
             let desc = NSTextField(wrappingLabelWithString: description)
             desc.font = .systemFont(ofSize: 11)
             desc.textColor = .tertiaryLabelColor
-            desc.preferredMaxLayoutWidth = 400
+            desc.preferredMaxLayoutWidth = 410
             stack.addArrangedSubview(desc)
             stack.setCustomSpacing(12, after: desc)
         }
@@ -325,9 +334,10 @@ private final class SettingsViewController: NSViewController {
             spacer.widthAnchor.constraint(equalToConstant: labelWidth)
         ])
 
-        let hint = NSTextField(labelWithString: text)
+        let hint = NSTextField(wrappingLabelWithString: text)
         hint.font = .systemFont(ofSize: 11)
         hint.textColor = .tertiaryLabelColor
+        hint.preferredMaxLayoutWidth = 260
 
         let row = NSStackView(views: [spacer, hint])
         row.orientation = .horizontal

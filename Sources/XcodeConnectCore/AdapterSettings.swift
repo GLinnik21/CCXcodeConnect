@@ -30,7 +30,7 @@ public final class AdapterSettings: AdapterSettingsProviding, @unchecked Sendabl
     private func registerDefaults() {
         defaults.register(defaults: [
             Key.launchAtLogin.rawValue: true,
-            Key.diagnosticsPollingEnabled.rawValue: true,
+            Key.diagnosticsPollingEnabled.rawValue: false,
             Key.diagnosticsPollingInterval.rawValue: 3.0,
             Key.workspacePollingInterval.rawValue: 3.0,
             Key.editorPollingInterval.rawValue: 0.5,
