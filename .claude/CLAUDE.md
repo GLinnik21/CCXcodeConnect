@@ -12,7 +12,26 @@ make uninstall                                                     # remove app 
 
 Requires macOS 14+ and a running Xcode instance with `xcrun mcpbridge` available (Xcode 26.3+).
 
+```bash
+LOG_LEVEL=debug swift run cc-xcode-connect                         # run with debug logging
+```
+
 The .app registers as a login item via `SMAppService.mainApp` so it starts automatically at login.
+
+## App Architecture
+- Pure AppKit (no SwiftUI) — NSStatusItem + NSMenu for menu bar, NSWindow for settings
+- LSUIElement=true in Info.plist (no Dock icon)
+- Settings stored in UserDefaults via injectable `AdapterSettingsProviding` protocol
+- Polling settings apply live via `restartPolling()` chain: AppDelegate → AdapterSupervisor → AdapterServer → EditorContext
+
+## Protocol Constraints
+- Server name MUST be `"ide"` — Claude Code searches `mcpClients` for `name === "ide"`
+- Lock file: `~/.claude/ide/{port}.lock` with `{pid, workspaceFolders, ideName, transport:"ws", runningInWindows, authToken}`
+- Auth header: `X-Claude-Code-Ide-Authorization: {uuid}`, rejected with close code 1008 if invalid
+- `getDiagnostics` severity is a STRING ("Error", "Warning", "Info", "Hint"), NOT an integer
+- Lines are 0-indexed in the protocol (Xcode returns 1-indexed, subtract 1)
+- `getDiagnostics` URI filter: use `**/filename.swift` glob (full path causes mcpbridge double-slash bug)
+- XcodeListNavigatorIssues: pass `severity: "remark"` to get all issues (default is "error" only)
 
 ## Gotchas
 

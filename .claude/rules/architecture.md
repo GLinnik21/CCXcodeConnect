@@ -7,6 +7,19 @@ paths:
 
 # Architecture
 
+## Key Files
+- `AdapterServer.swift` — main server, manages lifecycle and polling timers (workspace 3s, selection 500ms, diagnostics 3s)
+- `AdapterSupervisor.swift` — multi-workspace mode, spawns AdapterServers
+- `MCPToolRouter.swift` — routes tool calls, holds tabIdentifier and editorContext
+- `MCPRequestHandler.swift` — MCP protocol handler (serverInfo name = "ide")
+- `WebSocketServer.swift` — NIO WebSocket server, broadcasts notifications
+- `EditorContext.swift` — AppleScript poll for selection, sends selection_changed
+- `WorkspaceDetector.swift` — detects open Xcode workspaces via AppleScript
+- `MCPBridgeClient.swift` — communicates with Xcode mcpbridge (STDIO)
+- `Tools/GetDiagnosticsTool.swift` — proxies to XcodeListNavigatorIssues, transforms to LSP format
+
+## Targets
+
 Three targets managed via `Package.swift`:
 
 - **XcodeConnectCore** (library) — all core logic in `Sources/XcodeConnectCore/`
