@@ -1,11 +1,14 @@
 # CC Xcode Connect
 
 A macOS menu bar app that enables the `/ide` integration for [Claude Code](https://claude.ai/code) — so it can see your current file, cursor position, and diagnostics in Xcode.
+<img src="assets/status_bar.png" width="400" alt="Select Xcode workspace in /ide">
 
-<img src="assets/ide-select.png" width="400" alt="Select Xcode workspace in /ide">
-<img src="assets/ide-in-readme.png" width="400" alt="Claude Code sees your active file">
-<img src="assets/ide-11-lines.png" width="400" alt="Claude Code sees selected lines">
-<img src="assets/ide-diagnostics.jpeg" width="400" alt="Claude Code found diagnostic issues">
+In Claude Code:
+
+<img src="assets/ide-select.png" width="800" alt="Select Xcode workspace in /ide">
+<img src="assets/ide-in-readme.png" width="800" alt="Claude Code sees your active file">
+<img src="assets/ide-11-lines.png" width="800" alt="Claude Code sees selected lines">
+<img src="assets/ide-diagnostics.jpeg" width="800" alt="Claude Code found diagnostic issues">
 
 ## Requirements
 
