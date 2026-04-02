@@ -17,7 +17,17 @@ public struct WorkspaceInfo {
 
 public enum WorkspaceDetector {
     public static func detect() -> [WorkspaceInfo] {
-        let script = "tell application \"Xcode\" to return path of every workspace document"
+        let script = """
+            tell application "Xcode"
+                set ps to {}
+                repeat with d in workspace documents
+                    set p to path of d
+                    if p is not missing value then set end of ps to p
+                end repeat
+                set text item delimiters to ", "
+                return ps as text
+            end tell
+            """
         let output: String
         do {
             output = try runAppleScript(script)
