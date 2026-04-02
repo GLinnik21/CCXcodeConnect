@@ -1,8 +1,8 @@
 # CC Xcode Connect
 
-A macOS menu bar app that enables the `/ide` integration for [Claude Code](https://claude.ai/code) — so it can see your current file, cursor position, and diagnostics in Xcode.
+A macOS menu bar app that connects Xcode to [Claude Code](https://claude.ai/code), so Claude can see your open files, cursor position, and build diagnostics as you work.
 
-<img src="assets/status_bar.png" width="400" alt="Select Xcode workspace in /ide">
+<img src="assets/status_bar.png" width="400" alt="CC Xcode Connect menu bar dropdown">
 
 In Claude Code:
 
@@ -29,7 +29,7 @@ On first launch, macOS will block it because the app is not notarized. Go to **S
 
 ### Download
 
-Grab the latest `.zip` from [Releases](https://github.com/GLinnik21/CCXcodeConnect/releases), extract, and move to `/Applications`. On first launch, go to **System Settings > Privacy & Security** and click **Open Anyway**.
+Grab the latest `.zip` from [Releases](https://github.com/GLinnik21/CCXcodeConnect/releases), extract, and move to `~/Applications` (or `/Applications`). On first launch, go to **System Settings > Privacy & Security** and click **Open Anyway**.
 
 ### Build from source
 
@@ -37,49 +37,29 @@ Grab the latest `.zip` from [Releases](https://github.com/GLinnik21/CCXcodeConne
 make install
 ```
 
-The app registers as a login item and launches automatically at login.
-
-## Uninstall
-
-```bash
-brew uninstall cc-xcode-connect
-```
-
-Or if installed manually:
-
-```bash
-make uninstall
-```
-
-## CLI
-
-The headless CLI can also be used directly:
-
-```bash
-swift run cc-xcode-connect                    # supervisor mode (auto-manages all workspaces)
-swift run cc-xcode-connect --workspace /path  # single targeted workspace
-```
+The app starts automatically at login — no need to launch it manually after the first time.
 
 ## Usage
 
-1. Install the app (see [Install](#install) above)
-2. On each Xcode launch, macOS will ask to allow CC Xcode Connect to connect to Xcode — click **OK** to grant the automation permission
-3. Open one or more projects in Xcode — the adapter appears in the menu bar
-4. In each Claude Code session, run `/ide` to connect to the matching workspace
-5. Claude Code can now see your active file, cursor position, and diagnostics
+1. Open one or more projects in Xcode — the menu bar icon indicates the connection is established
+2. When Xcode asks to allow CC Xcode Connect to access Xcode, click **Allow**
+3. In Claude Code, run `/ide` to connect to the matching workspace
+4. Claude Code can now see your active file, cursor position, and diagnostics
 
-Each Xcode window gets its own adapter instance with a dedicated WebSocket port and lock file. Multiple Claude Code clients can connect to the same workspace simultaneously.
+You can enable auto-connect in `/config` or by launching Claude Code with `--ide`.
+
+Each Xcode workspace gets its own connection. Multiple Claude Code sessions can connect to the same workspace simultaneously.
 
 ## Tips
 
-When using Claude Code with `CLAUDE_CODE_NO_FLICKER=1` (fullscreen rendering), clicking file paths in the terminal opens them in Xcode.
+- Set `CLAUDE_CODE_NO_FLICKER=1` in your shell profile — clicking file paths in Claude Code's output will open them directly in Xcode.
 
-## Architecture
+<details>
+<summary>Uninstall</summary>
 
-The app registers as a login item via `SMAppService` and:
+```bash
+brew uninstall --cask cc-xcode-connect
+```
 
-- Runs an `AdapterSupervisor` that monitors Xcode for open workspaces
-- Creates one `AdapterServer` per workspace, each with its own WebSocket port and lock file
-- Shares a single `xcrun mcpbridge` connection across all workspaces (routed by `tabIdentifier`)
-- Polls for editor context (active file, selection) via AppleScript, filtered per workspace
-- Supports multiple Claude Code clients per workspace (notifications broadcast, responses routed)
+If installed manually, quit the app and delete `CCXcodeConnect.app` from your Applications folder.
+</details>
