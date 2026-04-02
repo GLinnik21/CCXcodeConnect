@@ -34,7 +34,7 @@ final class MCPRequestHandlerTests: XCTestCase {
         XCTAssertEqual(tools?.count, 0)
     }
 
-    func testToolsListWithRouterReturns9Tools() async throws {
+    func testToolsListWithRouterReturns10Tools() async throws {
         var handler = MCPRequestHandler()
         handler.toolRouter = MCPToolRouter(bridgeClient: MockBridgeClient())
         let request = JSONRPCRequest(method: "tools/list", params: nil, id: .int(3))

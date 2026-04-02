@@ -36,7 +36,7 @@ final class GetSelectionToolTests: XCTestCase {
     }
 }
 
-private struct DefaultTestSettings: AdapterSettingsProviding {
+struct DefaultTestSettings: AdapterSettingsProviding {
     var diagnosticsPollingEnabled = true
     var diagnosticsPollingInterval: TimeInterval = 3.0
     var workspacePollingInterval: TimeInterval = 3.0
