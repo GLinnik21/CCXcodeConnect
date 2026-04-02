@@ -70,6 +70,10 @@ swift run cc-xcode-connect --workspace /path  # single targeted workspace
 
 Each Xcode window gets its own adapter instance with a dedicated WebSocket port and lock file. Multiple Claude Code clients can connect to the same workspace simultaneously.
 
+## Tips
+
+When using Claude Code with `CLAUDE_CODE_NO_FLICKER=1` (fullscreen rendering), clicking file paths in the terminal opens them in Xcode.
+
 ## Architecture
 
 The app registers as a login item via `SMAppService` and:
